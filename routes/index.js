@@ -19,7 +19,7 @@ const findDocuments = function(db, callback) {
   const collection = db.collection('projectData');
   collection.find({title: { $exists: true}}).toArray(function(err, docs) {
     console.log("Found the following records:");
-    console.log(docs)
+    console.log(docs);
     callback(docs);
   });
 };
