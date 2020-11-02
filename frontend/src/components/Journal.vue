@@ -32,7 +32,7 @@
                     <td>{{ item.end }}</td>
                     <td>{{ item.distance }}</td>
                     <td style="padding: 0">
-                        <button class="w3-button w3-red w3-block" style="padding: 0; height: 40px">Delete</button>
+                        <button class="w3-button w3-red w3-block" style="padding: 0; height: 40px" v-on:click="DelButtonClick(item.id)">Delete</button>
                     </td>
                 </tr>
             </table>
@@ -49,14 +49,24 @@
                 <a href="#" class="w3-button">&raquo;</a>
             </div>
         </div>
+        <ModalWindow v-if="modalWindow.isVisible" v-bind:header="modalWindow.header" v-bind:text="modalWindow.text" v-on:yes="DeleteRow()" v-on:no="modalWindow.isVisible = false"></ModalWindow>
     </div>
 </template>
 
 <script>
+    import ModalWindow from "./ModalWindow";
+
     export default {
         name: "Journal",
+        components: {ModalWindow},
         data: function () {
             return {
+                modalWindow: {
+                    isVisible: false,
+                    header: 'Warning',
+                    text: 'Do you want to delete this record?',
+                    rowId: '',
+                },
                 voyages: [
                     {
                         id: '1',
@@ -159,6 +169,15 @@
                         distance: '465'
                     },
                 ]
+            }
+        },
+        methods: {
+            DelButtonClick: function (rowId) {
+                this.modalWindow.rowId = rowId;
+                this.modalWindow.isVisible = true;
+            },
+            DeleteRow: function () {
+                console.log(`Удаление из бд записи с id = ${this.modalWindow.rowId}`)
             }
         }
     }
