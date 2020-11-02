@@ -3,7 +3,7 @@
         <h1>Sea Voyages Journal</h1>
         <div class="w3-container w3-section">
             <div class="w3-bar">
-                <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%; margin: 0 2%">ADD NEW RECORD</button>
+                <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%; margin: 0 2%" v-on:click="addRecordWindow.isVisible = true">ADD NEW RECORD</button>
                 <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46% ; margin: 0 2%">RECORDS FILTER AND SORT</button>
             </div>
             <div class="w3-bar w3-margin-top">
@@ -50,22 +50,27 @@
             </div>
         </div>
         <ModalWindow v-if="modalWindow.isVisible" v-bind:header="modalWindow.header" v-bind:text="modalWindow.text" v-on:yes="DeleteRow()" v-on:no="modalWindow.isVisible = false"></ModalWindow>
+        <AddRecord v-if="addRecordWindow.isVisible" v-on:no="addRecordWindow.isVisible = false"></AddRecord>
     </div>
 </template>
 
 <script>
     import ModalWindow from "./ModalWindow";
+    import AddRecord from "./AddRecord";
 
     export default {
         name: "Journal",
-        components: {ModalWindow},
+        components: {AddRecord, ModalWindow},
         data: function () {
             return {
                 modalWindow: {
                     isVisible: false,
-                    header: 'Warning',
+                    header: 'WARNING',
                     text: 'Do you want to delete this record?',
                     rowId: '',
+                },
+                addRecordWindow: {
+                    isVisible: false,
                 },
                 voyages: [
                     {

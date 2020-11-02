@@ -16,7 +16,11 @@
 <script>
     export default {
         name: "ModalWindow",
-        props: ['header', 'text'],
+        props: {
+            header: String,
+            text: String
+        },
+        //props: ['header', 'text'],
         methods: {
             CloseModal: function (event) {
                 if (event.target === document.getElementById('modal-window')) {
