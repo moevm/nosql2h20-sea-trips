@@ -11,12 +11,18 @@ export default {
 </script>
 
 <style>
+  @import "https://www.w3schools.com/w3css/4/w3.css";
+
+  h1 {
+    font-weight: bold;
+  }
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+
+  margin: 0 60px;
 }
 </style>
