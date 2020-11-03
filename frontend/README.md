@@ -1,4 +1,4 @@
-# test
+# sea-trips-frontend
 
 ## Project setup
 ```

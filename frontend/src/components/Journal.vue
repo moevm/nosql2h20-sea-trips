@@ -8,7 +8,7 @@
             </div>
             <div class="w3-bar w3-margin-top">
                 <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%; margin: 0 2%">STATISTICS</button>
-                <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%; margin: 0 2%">BACK-UP USAGE</button>
+                <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%; margin: 0 2%" v-on:click="backUpWindow.isVisible = true">BACK-UP USAGE</button>
             </div>
         </div>
         <div class="w3-container w3-section w3-responsive">
@@ -51,16 +51,18 @@
         </div>
         <ModalWindow v-if="modalWindow.isVisible" v-bind:header="modalWindow.header" v-bind:text="modalWindow.text" v-on:yes="DeleteRow()" v-on:no="modalWindow.isVisible = false"></ModalWindow>
         <AddRecord v-if="addRecordWindow.isVisible" v-on:no="addRecordWindow.isVisible = false"></AddRecord>
+        <BackUp v-if="backUpWindow.isVisible" v-on:no="backUpWindow.isVisible = false"></BackUp>
     </div>
 </template>
 
 <script>
     import ModalWindow from "./ModalWindow";
     import AddRecord from "./AddRecord";
+    import BackUp from "./BackUp";
 
     export default {
         name: "Journal",
-        components: {AddRecord, ModalWindow},
+        components: {BackUp, AddRecord, ModalWindow},
         data: function () {
             return {
                 modalWindow: {
@@ -70,6 +72,9 @@
                     rowId: '',
                 },
                 addRecordWindow: {
+                    isVisible: false,
+                },
+                backUpWindow: {
                     isVisible: false,
                 },
                 voyages: [
