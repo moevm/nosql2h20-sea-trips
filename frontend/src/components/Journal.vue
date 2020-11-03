@@ -23,7 +23,7 @@
                     <th>Distance, km</th>
                     <th></th>
                 </tr>
-                <tr v-for="item in voyages" v-bind:key="item.id" class="w3-hover-light-grey">
+                <tr v-for="item in voyages" v-bind:key="item.id" class="w3-hover-light-grey" v-on:click="GoToRecord($event, item.id)" style="cursor: pointer">
                     <td style="height: 10px">{{ item.ship }}</td>
                     <td>{{ item.commander }}</td>
                     <td>{{ item.departure }}</td>
@@ -32,7 +32,7 @@
                     <td>{{ item.end }}</td>
                     <td>{{ item.distance }}</td>
                     <td style="padding: 0">
-                        <button class="w3-button w3-red w3-block" style="padding: 0; height: 40px" v-on:click="DelButtonClick(item.id)">Delete</button>
+                        <button class="w3-button w3-red w3-block del-button" style="padding: 0; height: 40px" v-on:click="DelButtonClick(item.id)">Delete</button>
                     </td>
                 </tr>
             </table>
@@ -188,6 +188,11 @@
             },
             DeleteRow: function () {
                 console.log(`Удаление из бд записи с id = ${this.modalWindow.rowId}`)
+            },
+            GoToRecord: function (event, id) {
+                if (!event.target.classList.contains('del-button')) {
+                    this.$router.push({path: `/record/${id}`});
+                }
             }
         }
     }
