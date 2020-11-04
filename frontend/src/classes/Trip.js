@@ -9,14 +9,14 @@ export default class Trip {
         this.distance = '';
     }
 
-    initValues(id, shipName, commander, departureName, destinationName, startDate, endDate, distance) {
-        this.id = id;
-        this.shipName = shipName;
-        this.commander = commander;
-        this.departureName = departureName;
-        this.destinationName = destinationName;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.distance = distance;
+    CopyValuesFromBdEntity(entity) {
+        this.id = entity._id;
+        this.shipName = entity.shipName;
+        this.commander = entity.commander;
+        this.departureName = entity.departure.name;
+        this.destinationName = entity.destination.name;
+        this.startDate = entity.startDate;
+        this.endDate = entity.endDate;
+        this.distance = entity.distance;
     }
 }

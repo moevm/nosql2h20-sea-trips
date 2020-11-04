@@ -1,53 +1,44 @@
 <template>
     <div>
-        <h1>Sea Voyages Journal</h1>
-        <div class="w3-container w3-section">
-            <div class="w3-bar">
-                <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%; margin: 0 2%" v-on:click="addRecordWindow.isVisible = true">ADD NEW RECORD</button>
-                <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46% ; margin: 0 2%">RECORDS FILTER AND SORT</button>
+        <div>
+            <h1>Sea Voyages Journal</h1>
+            <div class="w3-container w3-section">
+                <div class="w3-bar">
+                    <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%; margin: 0 2%" v-on:click="addRecordWindow.isVisible = true">ADD NEW RECORD</button>
+                    <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46% ; margin: 0 2%">RECORDS FILTER AND SORT</button>
+                </div>
+                <div class="w3-bar w3-margin-top">
+                    <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%; margin: 0 2%">STATISTICS</button>
+                    <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%; margin: 0 2%" v-on:click="backUpWindow.isVisible = true">BACK-UP USAGE</button>
+                </div>
             </div>
-            <div class="w3-bar w3-margin-top">
-                <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%; margin: 0 2%">STATISTICS</button>
-                <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%; margin: 0 2%" v-on:click="backUpWindow.isVisible = true">BACK-UP USAGE</button>
+            <div class="w3-container w3-section w3-responsive">
+                <table class="w3-table w3-border w3-bordered w3-centered w3-card">
+                    <tr class="w3-light-grey">
+                        <th>Ship Name</th>
+                        <th>Commander</th>
+                        <th>Departure</th>
+                        <th>Destination</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Distance, km</th>
+                        <th></th>
+                    </tr>
+                    <tr v-for="item in trips" v-bind:key="item.id" class="w3-hover-light-grey" v-on:click="GoToRecord($event, item.id)" style="cursor: pointer">
+                        <td style="height: 10px">{{ item.shipName }}</td>
+                        <td>{{ item.commander }}</td>
+                        <td>{{ item.departureName }}</td>
+                        <td>{{ item.destinationName }}</td>
+                        <td>{{ item.startDate }}</td>
+                        <td>{{ item.endDate }}</td>
+                        <td>{{ item.distance }}</td>
+                        <td style="padding: 0">
+                            <button class="w3-button w3-red w3-block del-button" style="padding: 0; height: 40px" v-on:click="DelButtonClick(item.id)">Delete</button>
+                        </td>
+                    </tr>
+                </table>
             </div>
-        </div>
-        <div class="w3-container w3-section w3-responsive">
-            <table class="w3-table w3-border w3-bordered w3-centered w3-card">
-                <tr class="w3-light-grey">
-                    <th>Ship Name</th>
-                    <th>Commander</th>
-                    <th>Departure</th>
-                    <th>Destination</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Distance, km</th>
-                    <th></th>
-                </tr>
-                <tr v-for="item in trips" v-bind:key="item.id" class="w3-hover-light-grey" v-on:click="GoToRecord($event, item.id)" style="cursor: pointer">
-                    <td style="height: 10px">{{ item.shipName }}</td>
-                    <td>{{ item.commander }}</td>
-                    <td>{{ item.departureName }}</td>
-                    <td>{{ item.destinationName }}</td>
-                    <td>{{ item.startDate }}</td>
-                    <td>{{ item.endDate }}</td>
-                    <td>{{ item.distance }}</td>
-                    <td style="padding: 0">
-                        <button class="w3-button w3-red w3-block del-button" style="padding: 0; height: 40px" v-on:click="DelButtonClick(item.id)">Delete</button>
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <div class="w3-container w3-section w3-center">
-            <div class="w3-bar w3-border w3-round">
-                <a href="#" class="w3-button">&laquo;</a>
-                <a href="#" class="w3-button w3-light-grey">1</a>
-                <a href="#" class="w3-button">2</a>
-                <a href="#" class="w3-button">3</a>
-                <a href="#" class="w3-button">4</a>
-                <a href="#" class="w3-button">...</a>
-                <a href="#" class="w3-button">20</a>
-                <a href="#" class="w3-button">&raquo;</a>
-            </div>
+            <sliding-pagination :current="pagination.currentPage" :total="pagination.totalPages" @page-change="pageChangeHandler"></sliding-pagination>
         </div>
         <ModalWindow v-if="modalWindow.isVisible" v-bind:header="modalWindow.header" v-bind:text="modalWindow.text" v-on:yes="DeleteRow()" v-on:no="modalWindow.isVisible = false"></ModalWindow>
         <AddRecord v-if="addRecordWindow.isVisible" v-on:add-trip="AddRow" v-on:close="addRecordWindow.isVisible = false"></AddRecord>
@@ -61,10 +52,11 @@
     import AddRecord from "./AddRecord";
     import BackUp from "./BackUp";
     import Trip from "../classes/Trip";
+    import SlidingPagination from 'vue-sliding-pagination';
 
     export default {
         name: "Journal",
-        components: {BackUp, AddRecord, ModalWindow},
+        components: {BackUp, AddRecord, ModalWindow, SlidingPagination},
         data: function () {
             return {
                 modalWindow: {
@@ -80,6 +72,11 @@
                     isVisible: false,
                 },
                 trips: [],
+                pagination: {
+                    countRowPerPage: 10,
+                    totalPages: 1,
+                    currentPage: 1,
+                },
             }
         },
         methods: {
@@ -87,47 +84,55 @@
                 this.modalWindow.rowId = rowId;
                 this.modalWindow.isVisible = true;
             },
-            DeleteRow: function () {
-                axios.delete(`http://localhost:3000/sea-journal/trip?ID=${this.modalWindow.rowId}`)
-                    .then(response => {
-                        console.log('response:', response);
-                        //window.alert('Delete record!');
-                        this.modalWindow.isVisible = false;
-                        this.GetTrips();
-                    })
-                    .catch(error => console.log('error:', error));
+            DeleteRow: async function () {
+                await axios.delete(`http://localhost:3000/sea-journal/trip?ID=${this.modalWindow.rowId}`).then(response => {
+                    console.log('response:', response);
+                    //window.alert('Delete record!');
+                    this.modalWindow.isVisible = false;
+                    this.GetTrips();
+                }, error => {
+                    console.log('error:', error);
+                });
             },
             GoToRecord: function (event, id) {
                 if (!event.target.classList.contains('del-button')) {
                     this.$router.push({path: `/record/${id}`});
                 }
             },
-            GetTrips: function(offset = 0, limit = 10) {
+            GetTrips: async function(offset = this.pagination.currentPage - 1, limit = this.pagination.countRowPerPage) {
                 this.trips.length = 0;
-                axios.get(`http://localhost:3000/sea-journal/trips?offset=${offset}&limit=${limit}`)
-                    .then(response => {
-                        let trips = response.data;
-                        console.log(trips);
-                        trips.forEach(item => {
-                            let trip = new Trip();
-                            trip.initValues(item._id, item.shipName, item.commander, item.departure.name, item.destination.name, item.startDate, item.endDate, item.distance);
-                            this.trips.push(trip);
-                        });
-                        console.log('response:', response);
-                    })
-                    .catch(error => console.log('error:', error));
+                await axios.get(`http://localhost:3000/sea-journal/trips-count`).then(response => {
+                    let tripsCount = response.data.tripsCount;
+                    this.pagination.totalPages = Math.ceil(tripsCount / this.pagination.countRowPerPage);
+                }, error => {
+                    console.log(error);
+                });
+                await axios.get(`http://localhost:3000/sea-journal/trips?offset=${offset}&limit=${limit}`).then(response => {
+                    let trips = response.data;
+                    trips.forEach(item => {
+                        let trip = new Trip();
+                        trip.CopyValuesFromBdEntity(item);
+                        this.trips.push(trip);
+                    });
+                }, error => {
+                    console.log(error);
+                });
             },
             AddRow: function () {
                 this.addRecordWindow.isVisible = false;
                 this.GetTrips();
+            },
+            pageChangeHandler(selectedPage) {
+                this.pagination.currentPage = selectedPage;
+                this.GetTrips();
             }
         },
         created() {
-            this.GetTrips();
+            this.GetTrips(0);
         }
     }
 </script>
 
-<style scoped>
-
+<style>
+    @import "../assets/css/pagination-panel.css";
 </style>
