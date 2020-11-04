@@ -89,62 +89,77 @@ class Model {
         return true;
     }
 
-    async entriesCount() {
+    async recordsCount() {
         let resultCount;
         const client = await MongoClient.connect('mongodb://localhost:27017', { useUnifiedTopology: true });
         const journalDB = client.db('journalDB');
         const journal = await journalDB.collection("journal");
-        resultCount = await journal.find({}).count();
+        resultCount = await journal.find({}).count().catch(() => {
+            throw new Error("Server Error!");
+        });
         await client.close();
         return resultCount;
     }
 
-    async getEntries(offset, limit) {
+    async getRecord(recordID) {
         const client = await MongoClient.connect('mongodb://localhost:27017', { useUnifiedTopology: true });
         const journalDB = client.db('journalDB');
         const journal = await journalDB.collection("journal");
-        let entries = await journal.find({}).toArray();
+        let record = await journal.findOne({"_id": new ObjectID(recordID)}).catch(err => {
+            console.log(err);
+            throw new Error("Server Error!");
+        });
         await client.close();
-        return entries.slice(offset, offset + limit);
+        return record
     }
 
-    async addEntity(entity) {
+    async getRecords(offset, limit) {
+        const client = await MongoClient.connect('mongodb://localhost:27017', { useUnifiedTopology: true });
+        const journalDB = client.db('journalDB');
+        const journal = await journalDB.collection("journal");
+        let records = await journal.find({}).toArray().catch(() => {
+            throw new Error("Server Error!");
+        });
+        await client.close();
+        return records.slice(offset, offset + limit);
+    }
+
+    async addRecord(record) {
         let resultMessage = {};
         const client = await MongoClient.connect('mongodb://localhost:27017', { useUnifiedTopology: true });
         const journalDB = client.db('journalDB');
         const journal = await journalDB.collection("journal");
         await journal.insertOne({
-            shipName: entity.shipName,
-            commander: entity.commander,
+            shipName: record.shipName,
+            commander: record.commander,
             departure: {
-                "name": entity.departureName,
+                "name": record.departureName,
             },
             destination: {
-                "name": entity.destinationName,
+                "name": record.destinationName,
             },
-            startDate: new Date(entity.startDate),
-            endDate: new Date(entity.endDate),
-            distance: entity.distance
+            startDate: new Date(record.startDate),
+            endDate: new Date(record.endDate),
+            distance: record.distance
         }).then(result => {
             resultMessage.message = "Success!";
             resultMessage.newID = result.insertedId;
-        }).catch(error => {
-            console.log(error);
-            resultMessage.message = "Fail";
+        }).catch(() => {
+            throw new Error ("Insert Error!");
         });
         await client.close();
         return resultMessage;
     }
 
-    async removeEntity(entityID) {
+    async removeRecord(recordID) {
         let resultMessage = {};
         const client = await MongoClient.connect('mongodb://localhost:27017', { useUnifiedTopology: true });
         const journalDB = client.db('journalDB');
         const journal = await journalDB.collection("journal");
-        await journal.deleteOne({"_id": new ObjectID(entityID)}).then(() => {
+        await journal.deleteOne({"_id": new ObjectID(recordID)}).then(() => {
             resultMessage.message = "Success";
         }).catch(() => {
-            resultMessage.message = "Fail";
+            throw new Error("Server Error!");
         })
         await client.close();
         return resultMessage;
