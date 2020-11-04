@@ -20,7 +20,6 @@
             header: String,
             text: String
         },
-        //props: ['header', 'text'],
         methods: {
             CloseModal: function (event) {
                 if (event.target === document.getElementById('modal-window')) {
@@ -32,5 +31,4 @@
 </script>
 
 <style scoped>
-
 </style>
