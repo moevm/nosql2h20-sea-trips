@@ -23,13 +23,13 @@
                     <th>Distance, km</th>
                     <th></th>
                 </tr>
-                <tr v-for="item in voyages" v-bind:key="item.id" class="w3-hover-light-grey" v-on:click="GoToRecord($event, item.id)" style="cursor: pointer">
-                    <td style="height: 10px">{{ item.ship }}</td>
+                <tr v-for="item in trips" v-bind:key="item.id" class="w3-hover-light-grey" v-on:click="GoToRecord($event, item.id)" style="cursor: pointer">
+                    <td style="height: 10px">{{ item.shipName }}</td>
                     <td>{{ item.commander }}</td>
-                    <td>{{ item.departure }}</td>
-                    <td>{{ item.destination }}</td>
-                    <td>{{ item.start }}</td>
-                    <td>{{ item.end }}</td>
+                    <td>{{ item.departureName }}</td>
+                    <td>{{ item.destinationName }}</td>
+                    <td>{{ item.startDate }}</td>
+                    <td>{{ item.endDate }}</td>
                     <td>{{ item.distance }}</td>
                     <td style="padding: 0">
                         <button class="w3-button w3-red w3-block del-button" style="padding: 0; height: 40px" v-on:click="DelButtonClick(item.id)">Delete</button>
@@ -50,15 +50,17 @@
             </div>
         </div>
         <ModalWindow v-if="modalWindow.isVisible" v-bind:header="modalWindow.header" v-bind:text="modalWindow.text" v-on:yes="DeleteRow()" v-on:no="modalWindow.isVisible = false"></ModalWindow>
-        <AddRecord v-if="addRecordWindow.isVisible" v-on:no="addRecordWindow.isVisible = false"></AddRecord>
+        <AddRecord v-if="addRecordWindow.isVisible" v-on:add-trip="AddRow" v-on:close="addRecordWindow.isVisible = false"></AddRecord>
         <BackUp v-if="backUpWindow.isVisible" v-on:no="backUpWindow.isVisible = false"></BackUp>
     </div>
 </template>
 
 <script>
+    import axios from 'axios';
     import ModalWindow from "./ModalWindow";
     import AddRecord from "./AddRecord";
     import BackUp from "./BackUp";
+    import Trip from "../classes/Trip";
 
     export default {
         name: "Journal",
@@ -77,108 +79,7 @@
                 backUpWindow: {
                     isVisible: false,
                 },
-                voyages: [
-                    {
-                        id: '1',
-                        ship: 'LEWIS',
-                        commander: 'D.HUTCHINSON',
-                        departure: 'SALEM',
-                        destination: 'ZANZIBAR',
-                        start: '1854/01/01',
-                        end: '1854/02/01',
-                        distance: '465'
-                    },
-                    {
-                        id: '2',
-                        ship: 'LEWIS',
-                        commander: 'D.HUTCHINSON',
-                        departure: 'SALEM',
-                        destination: 'ZANZIBAR',
-                        start: '1854/01/01',
-                        end: '1854/02/01',
-                        distance: '465'
-                    },
-                    {
-                        id: '3',
-                        ship: 'LEWIS',
-                        commander: 'D.HUTCHINSON',
-                        departure: 'SALEM',
-                        destination: 'ZANZIBAR',
-                        start: '1854/01/01',
-                        end: '1854/02/01',
-                        distance: '465'
-                    },
-                    {
-                        id: '4',
-                        ship: 'LEWIS',
-                        commander: 'D.HUTCHINSON',
-                        departure: 'SALEM',
-                        destination: 'ZANZIBAR',
-                        start: '1854/01/01',
-                        end: '1854/02/01',
-                        distance: '465'
-                    },
-                    {
-                        id: '5',
-                        ship: 'LEWIS',
-                        commander: 'D.HUTCHINSON',
-                        departure: 'SALEM',
-                        destination: 'ZANZIBAR',
-                        start: '1854/01/01',
-                        end: '1854/02/01',
-                        distance: '465'
-                    },
-                    {
-                        id: '6',
-                        ship: 'LEWIS',
-                        commander: 'D.HUTCHINSON',
-                        departure: 'SALEM',
-                        destination: 'ZANZIBAR',
-                        start: '1854/01/01',
-                        end: '1854/02/01',
-                        distance: '465'
-                    },
-                    {
-                        id: '7',
-                        ship: 'LEWIS',
-                        commander: 'D.HUTCHINSON',
-                        departure: 'SALEM',
-                        destination: 'ZANZIBAR',
-                        start: '1854/01/01',
-                        end: '1854/02/01',
-                        distance: '465'
-                    },
-                    {
-                        id: '8',
-                        ship: 'LEWIS',
-                        commander: 'D.HUTCHINSON',
-                        departure: 'SALEM',
-                        destination: 'ZANZIBAR',
-                        start: '1854/01/01',
-                        end: '1854/02/01',
-                        distance: '465'
-                    },
-                    {
-                        id: '9',
-                        ship: 'LEWIS',
-                        commander: 'D.HUTCHINSON',
-                        departure: 'SALEM',
-                        destination: 'ZANZIBAR',
-                        start: '1854/01/01',
-                        end: '1854/02/01',
-                        distance: '465'
-                    },
-                    {
-                        id: '10',
-                        ship: 'LEWIS',
-                        commander: 'D.HUTCHINSON',
-                        departure: 'SALEM',
-                        destination: 'ZANZIBAR',
-                        start: '1854/01/01',
-                        end: '1854/02/01',
-                        distance: '465'
-                    },
-                ]
+                trips: [],
             }
         },
         methods: {
@@ -187,13 +88,42 @@
                 this.modalWindow.isVisible = true;
             },
             DeleteRow: function () {
-                console.log(`Удаление из бд записи с id = ${this.modalWindow.rowId}`)
+                axios.delete(`http://localhost:3000/sea-journal/trip?ID=${this.modalWindow.rowId}`)
+                    .then(response => {
+                        console.log('response:', response);
+                        //window.alert('Delete record!');
+                        this.modalWindow.isVisible = false;
+                        this.GetTrips();
+                    })
+                    .catch(error => console.log('error:', error));
             },
             GoToRecord: function (event, id) {
                 if (!event.target.classList.contains('del-button')) {
                     this.$router.push({path: `/record/${id}`});
                 }
+            },
+            GetTrips: function(offset = 0, limit = 10) {
+                this.trips.length = 0;
+                axios.get(`http://localhost:3000/sea-journal/trips?offset=${offset}&limit=${limit}`)
+                    .then(response => {
+                        let trips = response.data;
+                        console.log(trips);
+                        trips.forEach(item => {
+                            let trip = new Trip();
+                            trip.initValues(item._id, item.shipName, item.commander, item.departure.name, item.destination.name, item.startDate, item.endDate, item.distance);
+                            this.trips.push(trip);
+                        });
+                        console.log('response:', response);
+                    })
+                    .catch(error => console.log('error:', error));
+            },
+            AddRow: function () {
+                this.addRecordWindow.isVisible = false;
+                this.GetTrips();
             }
+        },
+        created() {
+            this.GetTrips();
         }
     }
 </script>
