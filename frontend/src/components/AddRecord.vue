@@ -58,15 +58,15 @@
             }
         },
         methods: {
-            Add: function(event)  {
+            Add: async function(event)  {
                 event.preventDefault();
-                axios.post('http://localhost:3000/sea-journal/add-trip', this.trip)
-                    .then(response => {
-                        console.log('response:', response);
-                        //window.alert('Add new record!');
-                        this.$emit('add-trip');
-                    })
-                    .catch(error => console.log('error:', error));
+                await axios.post('http://localhost:3000/sea-journal/add-trip', this.trip).then(response => {
+                    console.log('response:', response);
+                    //window.alert('Add new record!');
+                    this.$emit('add-trip');
+                }, error => {
+                    console.log('error:', error);
+                });
             }
         }
     }

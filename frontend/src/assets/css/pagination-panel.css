@@ -1,0 +1,35 @@
+.c-sliding-pagination__list {
+    display: inline-block;
+    padding: 0;
+    border: solid 1px lightgray;
+    border-radius: 5px;
+}
+
+.c-sliding-pagination__list-element {
+    display: inline-block;
+    cursor: pointer;
+}
+
+.c-sliding-pagination__list-element:hover {
+    background-color: lightgray;
+}
+
+.c-sliding-pagination__list-element--active {
+    background-color: #f1f1f1;
+}
+
+.c-sliding-pagination__list-element--disabled {
+    cursor: not-allowed;
+}
+
+.c-sliding-pagination__list-element--disabled .c-sliding-pagination__page {
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.c-sliding-pagination__page {
+    display: block;
+    text-decoration: none;
+    padding: 8px 16px;
+    line-height: 1.5;
+}
