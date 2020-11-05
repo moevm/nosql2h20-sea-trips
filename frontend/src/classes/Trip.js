@@ -19,4 +19,37 @@ export default class Trip {
         this.endDate = entity.endDate;
         this.distance = entity.distance;
     }
+
+    static GetFieldsForSorting() {
+        return [
+            {
+                option: 'SHIP NAME',
+                name: 'shipName'
+            },
+            {
+                option: 'COMMANDER',
+                name: 'commander'
+            },
+            {
+                option: 'DEPARTURE NAME',
+                name: 'departureName'
+            },
+            {
+                option: 'DESTINATION NAME',
+                name: 'destinationName'
+            },
+            {
+                option: 'START DATE',
+                name: 'startDate'
+            },
+            {
+                option: 'END DATE',
+                name: 'endDate'
+            },
+            {
+                option: 'DISTANCE',
+                name: 'distance'
+            },
+        ]
+    }
 }
