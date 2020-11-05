@@ -5,7 +5,7 @@
             <div class="w3-container w3-section">
                 <div class="w3-bar">
                     <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%; margin: 0 2%" v-on:click="addRecordWindow.isVisible = true">ADD NEW RECORD</button>
-                    <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46% ; margin: 0 2%">RECORDS FILTER AND SORT</button>
+                    <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46% ; margin: 0 2%" v-on:click="sortAndFilter.isVisible = true">RECORDS FILTER AND SORT</button>
                 </div>
                 <div class="w3-bar w3-margin-top">
                     <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%; margin: 0 2%">STATISTICS</button>
@@ -42,6 +42,7 @@
         </div>
         <ModalWindow v-if="modalWindow.isVisible" v-bind:header="modalWindow.header" v-bind:text="modalWindow.text" v-on:yes="DeleteRow()" v-on:no="modalWindow.isVisible = false"></ModalWindow>
         <AddRecord v-if="addRecordWindow.isVisible" v-on:add-trip="AddRow" v-on:close="addRecordWindow.isVisible = false"></AddRecord>
+        <SortAndFilterTrip v-if="sortAndFilter.isVisible" v-on:close="sortAndFilter.isVisible = false"/>
         <BackUp v-if="backUpWindow.isVisible" v-on:no="backUpWindow.isVisible = false"></BackUp>
     </div>
 </template>
@@ -53,10 +54,11 @@
     import BackUp from "./BackUp";
     import Trip from "../classes/Trip";
     import SlidingPagination from 'vue-sliding-pagination';
+    import SortAndFilterTrip from "./SortAndFilterTrip";
 
     export default {
         name: "Journal",
-        components: {BackUp, AddRecord, ModalWindow, SlidingPagination},
+        components: {SortAndFilterTrip, BackUp, AddRecord, ModalWindow, SlidingPagination},
         data: function () {
             return {
                 modalWindow: {
@@ -77,6 +79,9 @@
                     totalPages: 1,
                     currentPage: 1,
                 },
+                sortAndFilter: {
+                    isVisible: false,
+                }
             }
         },
         methods: {
@@ -99,7 +104,7 @@
                     this.$router.push({path: `/record/${id}`});
                 }
             },
-            GetTrips: async function(offset = this.pagination.currentPage - 1, limit = this.pagination.countRowPerPage) {
+            GetTrips: async function(offset = (this.pagination.currentPage - 1) * this.pagination.countRowPerPage, limit = this.pagination.countRowPerPage) {
                 this.trips.length = 0;
                 await axios.get(`http://localhost:3000/sea-journal/trips-count`).then(response => {
                     let tripsCount = response.data.tripsCount;
