@@ -1,15 +1,10 @@
+const fs = require('fs');
+
+const AVR_EARTH_RAD = 6371;
+
 function readTextFile(file, callback) {
-    const rawFile = new XMLHttpRequest();
-    rawFile.open("GET", file, false);
-    rawFile.onreadystatechange = function () {
-        if (rawFile.readyState === 4) {
-            if (rawFile.status === 200 || rawFile.status === 0) {
-                const allText = rawFile.responseText;
-                callback(allText)
-            }
-        }
-    };
-    rawFile.send(null);
+    const rawRecords = fs.readFileSync(file, 'utf8');
+    callback(rawRecords);
 }
 
 function parseStringToDate(str) {
@@ -18,11 +13,12 @@ function parseStringToDate(str) {
         parseInt(str.substr(6, 2)), 0, 0, 0);
 }
 
-function getMockedData(file, callback) {
+function getMockedData(file) {
+    let recordsList = [];
     readTextFile(file, function (sourceText) {
         const lines = sourceText.split('\n');
-        let ret = new Array(lines.length);
-        for (var line = 0; line < lines.length; line++) {
+        recordsList = new Array(lines.length);
+        for (let line = 0; line < lines.length; line++) {
             const currentLine = lines[line];
             let object = {};
             object.shipName = currentLine.substr(0, 8).trim();
@@ -39,13 +35,17 @@ function getMockedData(file, callback) {
             object.departure = departure;
             object.destination = destination;
             object.commander = currentLine.substr(70, 16).trim();
-            ret[line] = object
+            const sin1 = Math.sin(departure.lat * Math.PI / 180.0);
+            const sin2 = Math.sin(destination.lat * Math.PI / 180.0);
+            const cos1 = Math.cos(departure.lat * Math.PI / 180.0);
+            const cos2 = Math.cos(destination.lat * Math.PI / 180.0);
+            const cos3 = Math.cos((departure.lon - destination.lon) * Math.PI / 180.0);
+            const radDistance = Math.acos(sin1 * sin2 + cos1 * cos2 * cos3);
+            object.distance = radDistance * AVR_EARTH_RAD;
+            recordsList[line] = object
         }
-
-        callback(ret)
     });
+    return recordsList;
 }
 
-getMockedData("mock_data.txt", function (ret) {
-    console.log(ret);
-});
+module.exports = getMockedData;

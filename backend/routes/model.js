@@ -1,14 +1,22 @@
 const MongoClient = require('mongodb').MongoClient;
 const ObjectID = require('mongodb').ObjectID;
+const { exec } = require('child_process');
+const getMockedData = require('./parser/parser');
+
+const ADDRESS = "127.0.0.1";
+const PORT = "27017";
+const DB = "journalDB";
+const COLLECTION = "journal";
+const MOCK_FILE = `${__dirname}/parser/mock_data.txt`;
 
 class Model {
     constructor() {}
 
     async init() {
-        const client = await MongoClient.connect('mongodb://localhost:27017', { useUnifiedTopology: true });
-        const journalDB = client.db('journalDB');
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, { useUnifiedTopology: true });
+        const journalDB = client.db(DB);
         let alreadyExists = false;
-        const journal = await journalDB.createCollection("journal", {
+        const journal = await journalDB.createCollection(COLLECTION, {
             validator: {
                 $jsonSchema: {
                     bsonType: "object",
@@ -29,10 +37,10 @@ class Model {
                                     bsonType: "string"
                                 },
                                 lat: {
-                                    bsonType: [ "double" ]
+                                    bsonType: [ "double", "int" ]
                                 },
                                 lon: {
-                                    bsonType: [ "double" ]
+                                    bsonType: [ "double", "int" ]
                                 }
                             }
                         },
@@ -44,10 +52,10 @@ class Model {
                                     bsonType: "string"
                                 },
                                 lat: {
-                                    bsonType: [ "double" ]
+                                    bsonType: [ "double", "int" ]
                                 },
                                 lon: {
-                                    bsonType: [ "double" ]
+                                    bsonType: [ "double", "int" ]
                                 }
                             }
                         },
@@ -70,30 +78,20 @@ class Model {
         if (alreadyExists) {
             return;
         }
-        await journal.insertOne({
-            shipName: "St. Elena",
-            commander: "David Porter Jr.",
-            startDate: new Date(41242142),
-            endDate: new Date(41242142),
-            distance: 9356.54,
-            departure: {
-                "name": "New York",
-                "lon": 95.313
-            },
-            destination: {
-                "name": "Los Angeles",
-                "lat": 184.2144,
-            },
+        const recordsList = getMockedData(MOCK_FILE);
+        await journal.insertMany(recordsList).catch(err => {
+            console.log(err);
+            throw new Error("Server Error!");
         });
         await client.close();
-        return true;
+        return "Success";
     }
 
     async recordsCount() {
         let resultCount;
-        const client = await MongoClient.connect('mongodb://localhost:27017', { useUnifiedTopology: true });
-        const journalDB = client.db('journalDB');
-        const journal = await journalDB.collection("journal");
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, { useUnifiedTopology: true });
+        const journalDB = client.db(DB);
+        const journal = await journalDB.collection(COLLECTION);
         resultCount = await journal.find({}).count().catch(() => {
             throw new Error("Server Error!");
         });
@@ -102,9 +100,9 @@ class Model {
     }
 
     async getRecord(recordID) {
-        const client = await MongoClient.connect('mongodb://localhost:27017', { useUnifiedTopology: true });
-        const journalDB = client.db('journalDB');
-        const journal = await journalDB.collection("journal");
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, { useUnifiedTopology: true });
+        const journalDB = client.db(DB);
+        const journal = await journalDB.collection(COLLECTION);
         let record = await journal.findOne({"_id": new ObjectID(recordID)}).catch(err => {
             console.log(err);
             throw new Error("Server Error!");
@@ -114,9 +112,9 @@ class Model {
     }
 
     async getRecords(offset, limit) {
-        const client = await MongoClient.connect('mongodb://localhost:27017', { useUnifiedTopology: true });
-        const journalDB = client.db('journalDB');
-        const journal = await journalDB.collection("journal");
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, { useUnifiedTopology: true });
+        const journalDB = client.db(DB);
+        const journal = await journalDB.collection(COLLECTION);
         let records = await journal.find({}).toArray().catch(() => {
             throw new Error("Server Error!");
         });
@@ -126,9 +124,9 @@ class Model {
 
     async addRecord(record) {
         let resultMessage = {};
-        const client = await MongoClient.connect('mongodb://localhost:27017', { useUnifiedTopology: true });
-        const journalDB = client.db('journalDB');
-        const journal = await journalDB.collection("journal");
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, { useUnifiedTopology: true });
+        const journalDB = client.db(DB);
+        const journal = await journalDB.collection(COLLECTION);
         await journal.insertOne({
             shipName: record.shipName,
             commander: record.commander,
@@ -153,9 +151,9 @@ class Model {
 
     async removeRecord(recordID) {
         let resultMessage = {};
-        const client = await MongoClient.connect('mongodb://localhost:27017', { useUnifiedTopology: true });
-        const journalDB = client.db('journalDB');
-        const journal = await journalDB.collection("journal");
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, { useUnifiedTopology: true });
+        const journalDB = client.db(DB);
+        const journal = await journalDB.collection(COLLECTION);
         await journal.deleteOne({"_id": new ObjectID(recordID)}).then(() => {
             resultMessage.message = "Success";
         }).catch(() => {
@@ -163,6 +161,28 @@ class Model {
         })
         await client.close();
         return resultMessage;
+    }
+
+    async exportData(fileName) {
+        const command = `mongoexport --host=\"${ADDRESS}:${PORT}\" ` +
+            `--collection=journal --db=journalDB --out=back-ups/${fileName}`;
+        return new Promise (resolve => {
+            exec(command, (error, stdout, stderr) => {
+                if (error) {
+                    console.log(error);
+                    throw new Error("Server Error!");
+                }
+                if (stderr) {
+                    console.log(`stderr: ${stderr}`);
+                }
+                resolve("Success");
+            });
+        });
+    }
+
+    async importData(fileName) {
+        const command = `mongoexport --host=\"${ADDRESS}:${PORT}\" ` +
+            `--collection=journal --db=journalDB --file=back-ups/${fileName}`;
     }
 }
 
