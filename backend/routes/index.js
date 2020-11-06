@@ -3,7 +3,9 @@ const router = express.Router();
 const Model = require('./model');
 
 const model = new Model();
-model.init().then(() => {});
+model.init().catch(err => {
+    console.log(err);
+});
 
 /* GET count of records in the journal */
 router.get('/trips-count', function(req, res) {
@@ -64,7 +66,7 @@ router.post('/add-trip', function(req, res) {
 
 /* DELETE the record from the journal by its ID */
 router.delete('/trip', function(req, res) {
-    let entityID = req.query.ID;
+    const entityID = req.query.ID;
     model.removeRecord(entityID).then(result => {
         res.send(result);
     }).catch(() => {
@@ -72,5 +74,20 @@ router.delete('/trip', function(req, res) {
         res.send({message: "Internal Server Error"});
     });
 });
+
+/* EXPORT Data From DB into the file with the name "filename" */
+router.get('/export-data', function (req, res) {
+    const fileName = "sea-trips-backup.json";
+    model.exportData(fileName).then(() => {
+        const file = `./back-ups/${fileName}`;
+        res.download(file, fileName);
+    }).catch(() => {
+        res.status(500);
+        res.send({message: "Internal Server Error"});
+    });
+})
+
+/* IMPORT Data from income file into the DB */
+
 
 module.exports = router;
