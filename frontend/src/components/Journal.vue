@@ -8,7 +8,7 @@
                     <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46% ; margin: 0 2%" v-on:click="sortAndFilter.isVisible = true">RECORDS FILTER AND SORT</button>
                 </div>
                 <div class="w3-bar w3-margin-top">
-                    <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%; margin: 0 2%">STATISTICS</button>
+                    <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%; margin: 0 2%" v-on:click="$router.push({path: `/statistics`})">STATISTICS</button>
                     <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%; margin: 0 2%" v-on:click="backUpWindow.isVisible = true">BACK-UP USAGE</button>
                 </div>
             </div>
