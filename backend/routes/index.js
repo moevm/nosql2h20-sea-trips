@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Model = require('./model');
+const {Model} = require('./model');
 
 const model = new Model();
 model.init().catch(err => {
@@ -88,6 +88,18 @@ router.get('/export-data', function (req, res) {
 })
 
 /* IMPORT Data from income file into the DB */
-
+router.post('/import-data', function (req, res) {
+    const filePath = req.files.file.path;
+    if (!filePath.endsWith(".json")) {
+        res.status(400);
+        res.send({message: "Importing data from JSON files is only available."});
+    }
+    model.importData(filePath).then(() => {
+        res.send({message: "Success"});
+    }).catch(() => {
+        res.status(500);
+        res.send({message: "Internal Server Error"});
+    });
+});
 
 module.exports = router;
