@@ -4,24 +4,26 @@
             <span class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close Modal" v-on:click="$emit('no')">&times;</span>
             <div class="w3-container w3-margin-top">
                 <h2>BACK-UPS</h2>
-                <form class="w3-section w3-left-align">
+                <div class="w3-section w3-left-align">
                     <div class="w3-margin-bottom">
                         <label class="w3-inline-block" style="margin-right: 17px" for="input-file">File name:</label>
-                        <input id="input-file" type="file" class="w3-input w3-border w3-round-large input-file" v-on:change="GetFileName($event.target.value)" required>
+                        <input id="input-file" type="file" class="w3-input w3-border w3-round-large input-file" ref="file" v-on:change="GetFileName($event.target.value)">
                         <span id="file-name-label" class="w3-input w3-border w3-round-large" style="display: inline-block; width: 54%; margin-right: 17px">{{ this.fileNameLabelText }}</span>
                         <label class="w3-inline-block w3-btn w3-light-grey w3-border w3-round" style="width: 25%" for="input-file">REVIEW</label>
                     </div>
                     <div class="w3-bar w3-margin-bottom">
-                        <input type="submit" class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%; margin-right: 39px" value="EXPORT DB TO FILE" v-on:click="$emit('no')">
-                        <input type="submit" class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%;" value="IMPORT DB FROM FILE" v-on:click="$emit('no')">
+                        <input type="button" class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%; margin-right: 39px" value="EXPORT DB TO FILE" v-on:click="DownloadFile">
+                        <input type="button" class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%;" value="IMPORT DB FROM FILE" v-on:click="SendFile">
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+    import axios from "axios";
+
     export default {
         name: "BackUp",
         data: function () {
@@ -48,6 +50,36 @@
                 if (event.target === document.getElementById('modal-window')) {
                     this.$emit('no');
                 }
+            },
+            DownloadFile: async function () {
+                await axios.get(`http://localhost:3000/sea-journal/export-data`).then(response => {
+                    let link = document.createElement('a');
+                    link.setAttribute('download', 'sea-trips-backup.json');
+                    let type = 'data:application/json;base64, ';
+                    let base = btoa(response.data);
+                    link.href = type + base;
+                    link.click();
+                }, error => {
+                    console.log(error);
+                });
+            },
+            SendFile: async function (event) {
+                event.preventDefault();
+                let file = this.$refs.file.files[0];
+                console.log(file);
+                if (file === undefined) {
+                    window.alert('No file selected!');
+                    return;
+                }
+                let formData = new FormData();
+                formData.append('file', file);
+                await axios.post(`http://localhost:3000/sea-journal/import-data`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                }).then(response => {
+                    console.log(response);
+                }, error => {
+                    console.log(error);
+                });
             }
         }
     }
