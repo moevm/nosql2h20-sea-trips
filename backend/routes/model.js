@@ -165,7 +165,7 @@ class Model {
 
     async exportData(fileName) {
         const command = `mongoexport --host=\"${ADDRESS}:${PORT}\" ` +
-            `--collection=journal --db=journalDB --out=back-ups/${fileName}`;
+            `--collection=${COLLECTION} --db=${DB} --out=back-ups/${fileName}`;
         return new Promise (resolve => {
             exec(command, (error, stdout, stderr) => {
                 if (error) {
@@ -180,10 +180,30 @@ class Model {
         });
     }
 
-    async importData(fileName) {
-        const command = `mongoexport --host=\"${ADDRESS}:${PORT}\" ` +
-            `--collection=journal --db=journalDB --file=back-ups/${fileName}`;
+    async importData(filePath) {
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, { useUnifiedTopology: true });
+        const journalDB = client.db(DB);
+        const journal = await journalDB.collection(COLLECTION);
+        await journal.deleteMany({});
+        const command = `mongoimport --host=\"${ADDRESS}:${PORT}\" ` +
+            `--collection=${COLLECTION} --db=${DB} --file=${filePath}`;
+        return new Promise (resolve => {
+            exec(command, (error, stdout, stderr) => {
+                if (error) {
+                    console.log(error);
+                    throw new Error("Server Error!");
+                }
+                if (stderr) {
+                    console.log(`stderr: ${stderr}`);
+                }
+                resolve("Success");
+            });
+        });
     }
 }
 
-module.exports = Model;
+module.exports.Model = Model;
+module.exports.ADDRESS = ADDRESS;
+module.exports.PORT = PORT;
+module.exports.DB = DB;
+module.exports.COLLECTION = COLLECTION;
