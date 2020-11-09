@@ -2,9 +2,48 @@ const express = require('express');
 const router = express.Router();
 const {Model} = require('./model');
 
+const ACCEPTED_KEYS = ["shipName", "commander", "departureName", "destinationName",
+    "startDate", "endDate", "distance"];
+
+const checkKeys = function (keysObject) {
+    const keys = Object.keys(keysObject);
+    for (let key of keys) {
+        if (!ACCEPTED_KEYS.includes(key)) {
+            throw new Error("Key error!");
+        }
+    }
+};
+const checkSortingValues = function (sortingObject) {
+    const sortValues = Object.values(sortingObject);
+    for (let value of sortValues) {
+        if (value !== 1 && value !== -1) {
+            throw new Error("Sorting value error!");
+        }
+    }
+};
+
 const model = new Model();
 model.init().catch(err => {
     console.log(err);
+});
+
+/* SET filter and sort function for DB*/
+router.post('/set-filter-and-sorting', function (req, res) {
+    console.log(model.filter);
+    console.log(model.sorting);
+    try {
+        checkKeys(req.body.filter);
+        checkKeys(req.body.sorting);
+        checkSortingValues(req.body.sorting);
+    } catch {
+        res.status(400);
+        res.send({message: "Incorrect filter / sorting objects."});
+        return;
+    }
+    model.setFilterAndSort(req.body);
+    console.log(model.filter);
+    console.log(model.sorting);
+    res.send({message: "Success"});
 });
 
 /* GET count of records in the journal */

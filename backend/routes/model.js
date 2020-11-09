@@ -9,8 +9,38 @@ const DB = "journalDB";
 const COLLECTION = "journal";
 const MOCK_FILE = `${__dirname}/parser/mock_data.txt`;
 
+const prepareFilterObject = function (filterObject) {
+    if (filterObject.departureName) {
+        filterObject["departure.name"] = filterObject.departureName;
+        delete filterObject.departureName;
+    }
+    if (filterObject.destinationName) {
+        filterObject["destination.name"] = filterObject.destinationName;
+        delete filterObject.destinationName;
+    }
+    if (filterObject.startDate) {
+        filterObject.startDate = new Date(filterObject.startDate);
+    }
+    if (filterObject.endDate) {
+        filterObject.endDate = new Date(filterObject.endDate);
+    }
+};
+const prepareSortingObject = function (sortingObject) {
+    if (sortingObject.departureName) {
+        sortingObject["departure.name"] = sortingObject.departureName;
+        delete sortingObject.departureName;
+    }
+    if (sortingObject.destinationName) {
+        sortingObject["destination.name"] = sortingObject.destinationName;
+        delete sortingObject.destinationName;
+    }
+};
+
 class Model {
-    constructor() {}
+    constructor() {
+        this.filter = {};
+        this.sorting = {};
+    }
 
     async init() {
         const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, { useUnifiedTopology: true });
@@ -72,10 +102,10 @@ class Model {
                 }
             }
         }).catch(() => {
-            client.close();
             alreadyExists = true;
         });
-        if (alreadyExists) {
+        if (alreadyExists || process.argv.includes("--no-data-init")) {
+            await client.close();
             return;
         }
         const recordsList = getMockedData(MOCK_FILE);
@@ -87,12 +117,19 @@ class Model {
         return "Success";
     }
 
+    setFilterAndSort(filterSortingObject) {
+        prepareFilterObject(filterSortingObject.filter);
+        prepareSortingObject(filterSortingObject.sorting);
+        this.filter = filterSortingObject.filter;
+        this.sorting = filterSortingObject.sorting;
+    }
+
     async recordsCount() {
         let resultCount;
         const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, { useUnifiedTopology: true });
         const journalDB = client.db(DB);
         const journal = await journalDB.collection(COLLECTION);
-        resultCount = await journal.find({}).count().catch(() => {
+        resultCount = await journal.find(this.filter).count().catch(() => {
             throw new Error("Server Error!");
         });
         await client.close();
@@ -115,7 +152,7 @@ class Model {
         const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, { useUnifiedTopology: true });
         const journalDB = client.db(DB);
         const journal = await journalDB.collection(COLLECTION);
-        let records = await journal.find({}).toArray().catch(() => {
+        let records = await journal.find(this.filter).sort(this.sorting).toArray().catch(() => {
             throw new Error("Server Error!");
         });
         await client.close();
