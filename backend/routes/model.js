@@ -237,6 +237,82 @@ class Model {
             });
         });
     }
+
+    async getPortsStatistics(start, end) {
+        const portsStatisticsObject = {
+            departures: [],
+            destinations: [],
+            trades: []
+        };
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, { useUnifiedTopology: true });
+        const journalDB = client.db(DB);
+        const journal = await journalDB.collection(COLLECTION);
+        const departures = await journal.aggregate([
+            {
+                $match : { $and: [{ startDate: { $gte: start } }, { endDate: { $lte: end } },
+                        {"departure.name": {$ne: ""}}]}
+            },
+            {
+                $group : {
+                    _id : "$departure.name",
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort : { count: -1 }
+            }
+        ]).limit(10).toArray().catch(() => {
+            throw new Error("Server Error!");
+        });
+        const destinations = await journal.aggregate([
+            {
+                $match : { $and: [{ startDate: { $gte: start } }, { endDate: { $lte: end } },
+                        {"destination.name": {$ne: ""}}]}
+            },
+            {
+                $group : {
+                    _id : "$destination.name",
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort : { count: -1 }
+            }
+        ]).limit(10).toArray().catch(() => {
+            throw new Error("Server Error!");
+        });
+        const trades = await journal.aggregate([
+            {
+                $match : { $and: [{ startDate: { $gte: start } }, { endDate: { $lte: end } },
+                        {"departure.name": {$ne: ""}}, {"destination.name": {$ne: ""}}]}
+            },
+            {
+                $group : {
+                    _id : {
+                        from: "$departure.name",
+                        to: "$destination.name"
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort : { count: -1 }
+            }
+        ]).limit(10).toArray().catch(() => {
+            throw new Error("Server Error!");
+        });
+        for (let elem of departures) {
+            portsStatisticsObject.departures.push([elem._id, elem.count, elem.count.toString()]);
+        }
+        for (let elem of destinations) {
+            portsStatisticsObject.destinations.push([elem._id, elem.count, elem.count.toString()]);
+        }
+        for (let elem of trades) {
+            portsStatisticsObject.trades.push([`${elem._id.from} -> ${elem._id.to}`,
+                elem.count, elem.count.toString()]);
+        }
+        return portsStatisticsObject;
+    }
 }
 
 module.exports.Model = Model;
