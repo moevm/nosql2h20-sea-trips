@@ -4,6 +4,7 @@ const {Model} = require('./model');
 
 const ACCEPTED_KEYS = ["shipName", "commander", "departureName", "destinationName",
     "startDate", "endDate", "distance"];
+const STATISTIC_TYPES = ["ports", "trips"];
 
 const checkKeys = function (keysObject) {
     const keys = Object.keys(keysObject);
@@ -76,9 +77,11 @@ router.get('/trip/:id', function(req, res) {
    limit - max number of entries to get
 */
 router.get('/trips', function(req, res) {
-    let offset = parseInt(req.query.offset, 10) || 0;
+    let offset = parseInt(req.query.offset, 10);
     if (offset < 0) {
-        offset = 0;
+        res.status(400);
+        res.send({message: "Incorrect offset type (must be a number or a numeric string)"});
+        return;
     }
     let limit = parseInt(req.query.limit);
     if (isNaN(limit) || limit < 0) {
@@ -94,7 +97,12 @@ router.get('/trips', function(req, res) {
 
 /* ADD new record into the journal */
 router.post('/add-trip', function(req, res) {
-    req.body.distance = parseFloat(req.body.distance) || 0.0;
+    req.body.distance = parseFloat(req.body.distance);
+    if (isNaN(req.body.distance)) {
+        res.status(400);
+        res.send({message: "Incorrect distance type (must be a number or a numeric string)"});
+        return;
+    }
     model.addRecord(req.body).then(resultMessage => {
         res.send(resultMessage);
     }).catch(() => {
@@ -132,6 +140,7 @@ router.post('/import-data', function (req, res) {
     if (!filePath.endsWith(".json")) {
         res.status(400);
         res.send({message: "Importing data from JSON files is only available."});
+        return;
     }
     model.importData(filePath).then(() => {
         res.send({message: "Success"});
@@ -139,6 +148,35 @@ router.post('/import-data', function (req, res) {
         res.status(500);
         res.send({message: "Internal Server Error"});
     });
+});
+
+/*
+   GET statistics information for period of time
+   start - start of period (in years)
+   end - end of period (in years)
+   statistic - kind of statistics data
+*/
+router.get('/statistics', function (req, res) {
+    const start = parseInt(req.query.start, 10);
+    const end = parseInt(req.query.end, 10);
+    const statistic = req.query.statistic;
+    if (isNaN(start) || isNaN(end) || !statistic || !STATISTIC_TYPES.includes(statistic)) {
+        res.status(400);
+        res.send({message: "Incorrect query parameter(s)"});
+        return;
+    }
+    const startDate = new Date(start, 0, 0, 0, 0, 0, 0);
+    const endDate = new Date(end, 0, 0, 0, 0, 0, 0);
+    if (statistic === "ports") {
+        model.getPortsStatistics(startDate, endDate).then(result => {
+            res.send(result);
+        }).catch(() => {
+            res.status(500);
+            res.send({message: "Internal Server Error"});
+        });
+    } else {
+        res.send({message: "Success"});
+    }
 });
 
 module.exports = router;
