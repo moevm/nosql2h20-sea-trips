@@ -3,6 +3,8 @@
 </template>
 
 <script>
+    import Handler from "../classes/Handler";
+
     export default {
         name: "ColumnChart",
         props: {
@@ -23,9 +25,9 @@
                                 this.$emit('click', chart.getSelection());
                             });
                         })
-                        .catch(error => console.log(error));
+                        .catch(error => Handler.Error(error, 'CORECHART NOT LOADED'));
                 })
-                .catch(error => console.log(error));
+                .catch(error => Handler.Error(error, 'DIAGRAMS NOT LOADED'));
         }
     }
 </script>

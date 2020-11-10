@@ -58,6 +58,7 @@
 <script>
     import axios from "axios";
     import Trip from "../classes/Trip";
+    import Handler from "../classes/Handler";
 
     export default {
         name: "Record",
@@ -70,9 +71,7 @@
             let tripID = this.$route.params.id;
             axios.get(`http://localhost:3000/sea-journal/trip/${tripID}`).then(response => {
                 this.trip.CopyValuesFromBdEntity(response.data);
-            }, error => {
-                console.log(error);
-            });
+            }, error => Handler.Error(error, 'RECORD NOT RECEIVED'));
         }
     }
 </script>

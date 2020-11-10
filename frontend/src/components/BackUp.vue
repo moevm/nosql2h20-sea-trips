@@ -7,7 +7,7 @@
                 <div class="w3-section w3-left-align">
                     <div class="w3-margin-bottom">
                         <label class="w3-inline-block" style="margin-right: 17px" for="input-file">File name:</label>
-                        <input id="input-file" type="file" class="w3-input w3-border w3-round-large input-file" ref="file" v-on:change="GetFileName($event.target.value)">
+                        <input id="input-file" type="file" class="w3-input w3-border w3-round-large input-file" ref="file" accept="application/json" v-on:change="GetFileName($event.target.value)">
                         <span id="file-name-label" class="w3-input w3-border w3-round-large" style="display: inline-block; width: 54%; margin-right: 17px">{{ this.fileNameLabelText }}</span>
                         <label class="w3-inline-block w3-btn w3-light-grey w3-border w3-round" style="width: 25%" for="input-file">REVIEW</label>
                     </div>
@@ -23,6 +23,7 @@
 
 <script>
     import axios from "axios";
+    import Handler from "../classes/Handler";
 
     export default {
         name: "BackUp",
@@ -59,27 +60,28 @@
                     let base = btoa(response.data);
                     link.href = type + base;
                     link.click();
-                }, error => {
-                    console.log(error);
-                });
+                }, error => Handler.Error(error, 'ERROR DOWNLOAD FILE'));
             },
             SendFile: async function (event) {
                 event.preventDefault();
                 let file = this.$refs.file.files[0];
-                console.log(file);
                 if (file === undefined) {
-                    window.alert('No file selected!');
+                    Handler.Warn('SELECT FILE');
                     return;
                 }
+                let extension = file.name.substr(file.name.lastIndexOf('.'));
+                if (extension !== '.json') {
+                    Handler.Warn('SELECT A .JSON FILE');
+                    return;
+                }
+
                 let formData = new FormData();
                 formData.append('file', file);
                 await axios.post(`http://localhost:3000/sea-journal/import-data`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 }).then(response => {
-                    console.log(response);
-                }, error => {
-                    console.log(error);
-                });
+                    Handler.Success(response, 'DB IMPORT COMPLETED');
+                }, error => Handler.Error(error, 'DB IMPORT FAILED'));
             }
         }
     }
