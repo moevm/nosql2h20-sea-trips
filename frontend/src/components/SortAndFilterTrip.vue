@@ -49,39 +49,50 @@
 <script>
     import TripForm from "./TripForm";
     import Trip from "../classes/Trip";
+    import axios from "axios";
+    import Handler from "../classes/Handler";
 
     export default {
         name: "SortAndFilterTrip",
         components: {TripForm},
         data: function() {
             return {
-                sorting: [
-                    {
-                        field: 'shipName',
-                        order: 1
-                    },
-                    {
-                        field: 'departureName',
-                        order: -1
-                    },
-                ],
+                sorting: [],
                 tripSelectOptions: Trip.GetFieldsForSorting()
             }
         },
         methods: {
-            Apply: function (trip) {
-                console.log(trip, 'Apply filer and sort');
+            Apply: async function (trip) {
                 let deleteIndexes = [];
                 for (let i = 0; i < this.sorting.length; i++) {
                     if (!this.sorting[i].order || !this.sorting[i].field) {
                         deleteIndexes.push(i);
-                        console.log(i);
                     }
                 }
                 deleteIndexes = deleteIndexes.reverse();
                 deleteIndexes.forEach(item => {
                     this.sorting.splice(item, 1);
                 });
+
+                let filter = {};
+                for (let field in trip) {
+                    if (trip[field] !== '') {
+                        filter[field] = trip[field];
+                    }
+                }
+                let sorting = {};
+                this.sorting.forEach((item) => {
+                    sorting[item.field] = parseInt(item.order);
+                });
+                let data = {
+                    filter: filter,
+                    sorting: sorting
+                };
+
+                await axios.post('http://localhost:3000/sea-journal/set-filter-and-sorting', data).then(response => {
+                    Handler.Success(response, 'SET FILTER AND SORT');
+                    this.$emit('filter-sort');
+                }, error => Handler.Error(error, 'NO FILTER AND SORT APPLIED'));
             },
             AddSortSelect: function () {
                 if (this.sorting.length < Trip.GetFieldsForSorting().length) {

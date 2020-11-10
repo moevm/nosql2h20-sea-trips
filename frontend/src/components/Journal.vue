@@ -12,7 +12,7 @@
                     <button class="w3-btn w3-light-grey w3-border w3-round" style="width: 46%; margin: 0 2%" v-on:click="backUpWindow.isVisible = true">BACK-UP USAGE</button>
                 </div>
             </div>
-            <div class="w3-container w3-section w3-responsive">
+            <div class="w3-container w3-responsive">
                 <table class="w3-table w3-border w3-bordered w3-centered w3-card">
                     <tr class="w3-light-grey">
                         <th>Ship Name</th>
@@ -42,7 +42,7 @@
         </div>
         <ModalWindow v-if="modalWindow.isVisible" v-bind:header="modalWindow.header" v-bind:text="modalWindow.text" v-on:yes="DeleteRow()" v-on:no="modalWindow.isVisible = false"></ModalWindow>
         <AddRecord v-if="addRecordWindow.isVisible" v-on:add-trip="AddRow" v-on:close="addRecordWindow.isVisible = false"></AddRecord>
-        <SortAndFilterTrip v-if="sortAndFilter.isVisible" v-on:close="sortAndFilter.isVisible = false"/>
+        <SortAndFilterTrip v-if="sortAndFilter.isVisible" v-on:filter-sort="GetTrips" v-on:close="sortAndFilter.isVisible = false"/>
         <BackUp v-if="backUpWindow.isVisible" v-on:no="backUpWindow.isVisible = false"></BackUp>
     </div>
 </template>
@@ -55,6 +55,7 @@
     import Trip from "../classes/Trip";
     import SlidingPagination from 'vue-sliding-pagination';
     import SortAndFilterTrip from "./SortAndFilterTrip";
+    import Handler from "../classes/Handler";
 
     export default {
         name: "Journal",
@@ -91,13 +92,10 @@
             },
             DeleteRow: async function () {
                 await axios.delete(`http://localhost:3000/sea-journal/trip?ID=${this.modalWindow.rowId}`).then(response => {
-                    console.log('response:', response);
-                    //window.alert('Delete record!');
+                    Handler.Success(response, 'RECORD DELETED');
                     this.modalWindow.isVisible = false;
                     this.GetTrips();
-                }, error => {
-                    console.log('error:', error);
-                });
+                }, error => Handler.Error(error));
             },
             GoToRecord: function (event, id) {
                 if (!event.target.classList.contains('del-button')) {
@@ -109,9 +107,7 @@
                 await axios.get(`http://localhost:3000/sea-journal/trips-count`).then(response => {
                     let tripsCount = response.data.tripsCount;
                     this.pagination.totalPages = Math.ceil(tripsCount / this.pagination.countRowPerPage);
-                }, error => {
-                    console.log(error);
-                });
+                }, error => Handler.Error(error));
                 await axios.get(`http://localhost:3000/sea-journal/trips?offset=${offset}&limit=${limit}`).then(response => {
                     let trips = response.data;
                     trips.forEach(item => {
@@ -119,9 +115,7 @@
                         trip.CopyValuesFromBdEntity(item);
                         this.trips.push(trip);
                     });
-                }, error => {
-                    console.log(error);
-                });
+                }, error => Handler.Error(error));
             },
             AddRow: function () {
                 this.addRecordWindow.isVisible = false;

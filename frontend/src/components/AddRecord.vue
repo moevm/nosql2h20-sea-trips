@@ -13,6 +13,7 @@
 <script>
     import axios from "axios";
     import TripForm from "./TripForm";
+    import Handler from "../classes/Handler";
 
     export default {
         name: "AddRecord",
@@ -20,12 +21,9 @@
         methods: {
             Add: async function(trip)  {
                 await axios.post('http://localhost:3000/sea-journal/add-trip', trip).then(response => {
-                    console.log('response:', response);
-                    //window.alert('Add new record!');
+                    Handler.Success(response, 'RECORD ADDED');
                     this.$emit('add-trip');
-                }, error => {
-                    console.log('error:', error);
-                });
+                }, error => Handler.Error(error, 'NO RECORD ADDED'));
             }
         }
     }
