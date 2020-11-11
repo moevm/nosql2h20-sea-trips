@@ -1,13 +1,13 @@
 const MongoClient = require('mongodb').MongoClient;
 const ObjectID = require('mongodb').ObjectID;
-const { exec } = require('child_process');
+const {exec} = require('child_process');
 const getMockedData = require('./parser/parser');
 
 const ADDRESS = "127.0.0.1";
 const PORT = "27017";
 const DB = "journalDB";
 const COLLECTION = "journal";
-const MOCK_FILE = `${__dirname}/parser/mock_data.txt`;
+let MOCK_FILE = `${__dirname}/parser/mock_data.txt`;
 
 const prepareFilterObject = function (filterObject) {
     if (filterObject.departureName) {
@@ -43,14 +43,14 @@ class Model {
     }
 
     async init() {
-        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, { useUnifiedTopology: true });
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, {useUnifiedTopology: true});
         const journalDB = client.db(DB);
         let alreadyExists = false;
         const journal = await journalDB.createCollection(COLLECTION, {
             validator: {
                 $jsonSchema: {
                     bsonType: "object",
-                    required: [ "shipName", "commander", "departure", "destination",
+                    required: ["shipName", "commander", "departure", "destination",
                         "startDate", "endDate"],
                     properties: {
                         shipName: {
@@ -61,31 +61,31 @@ class Model {
                         },
                         departure: {
                             bsonType: "object",
-                            required: [ "name" ],
+                            required: ["name"],
                             properties: {
                                 name: {
                                     bsonType: "string"
                                 },
                                 lat: {
-                                    bsonType: [ "double", "int" ]
+                                    bsonType: ["double", "int"]
                                 },
                                 lon: {
-                                    bsonType: [ "double", "int" ]
+                                    bsonType: ["double", "int"]
                                 }
                             }
                         },
                         destination: {
                             bsonType: "object",
-                            required: [ "name" ],
+                            required: ["name"],
                             properties: {
                                 name: {
                                     bsonType: "string"
                                 },
                                 lat: {
-                                    bsonType: [ "double", "int" ]
+                                    bsonType: ["double", "int"]
                                 },
                                 lon: {
-                                    bsonType: [ "double", "int" ]
+                                    bsonType: ["double", "int"]
                                 }
                             }
                         },
@@ -96,7 +96,7 @@ class Model {
                             bsonType: "date"
                         },
                         distance: {
-                            bsonType: [ "double", "int" ]
+                            bsonType: ["double", "int"]
                         }
                     }
                 }
@@ -126,7 +126,7 @@ class Model {
 
     async recordsCount() {
         let resultCount;
-        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, { useUnifiedTopology: true });
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, {useUnifiedTopology: true});
         const journalDB = client.db(DB);
         const journal = await journalDB.collection(COLLECTION);
         resultCount = await journal.find(this.filter).count().catch(() => {
@@ -137,7 +137,7 @@ class Model {
     }
 
     async getRecord(recordID) {
-        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, { useUnifiedTopology: true });
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, {useUnifiedTopology: true});
         const journalDB = client.db(DB);
         const journal = await journalDB.collection(COLLECTION);
         let record = await journal.findOne({"_id": new ObjectID(recordID)}).catch(err => {
@@ -149,7 +149,7 @@ class Model {
     }
 
     async getRecords(offset, limit) {
-        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, { useUnifiedTopology: true });
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, {useUnifiedTopology: true});
         const journalDB = client.db(DB);
         const journal = await journalDB.collection(COLLECTION);
         let records = await journal.find(this.filter).sort(this.sorting).toArray().catch(() => {
@@ -161,7 +161,7 @@ class Model {
 
     async addRecord(record) {
         let resultMessage = {};
-        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, { useUnifiedTopology: true });
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, {useUnifiedTopology: true});
         const journalDB = client.db(DB);
         const journal = await journalDB.collection(COLLECTION);
         await journal.insertOne({
@@ -180,7 +180,7 @@ class Model {
             resultMessage.message = "Success!";
             resultMessage.newID = result.insertedId;
         }).catch(() => {
-            throw new Error ("Insert Error!");
+            throw new Error("Insert Error!");
         });
         await client.close();
         return resultMessage;
@@ -188,7 +188,7 @@ class Model {
 
     async removeRecord(recordID) {
         let resultMessage = {};
-        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, { useUnifiedTopology: true });
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, {useUnifiedTopology: true});
         const journalDB = client.db(DB);
         const journal = await journalDB.collection(COLLECTION);
         await journal.deleteOne({"_id": new ObjectID(recordID)}).then(() => {
@@ -203,7 +203,7 @@ class Model {
     async exportData(fileName) {
         const command = `mongoexport --host=\"${ADDRESS}:${PORT}\" ` +
             `--collection=${COLLECTION} --db=${DB} --out=back-ups/${fileName}`;
-        return new Promise (resolve => {
+        return new Promise(resolve => {
             exec(command, (error, stdout, stderr) => {
                 if (error) {
                     console.log(error);
@@ -218,13 +218,13 @@ class Model {
     }
 
     async importData(filePath) {
-        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, { useUnifiedTopology: true });
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, {useUnifiedTopology: true});
         const journalDB = client.db(DB);
         const journal = await journalDB.collection(COLLECTION);
         await journal.deleteMany({});
         const command = `mongoimport --host=\"${ADDRESS}:${PORT}\" ` +
             `--collection=${COLLECTION} --db=${DB} --file=${filePath}`;
-        return new Promise (resolve => {
+        return new Promise(resolve => {
             exec(command, (error, stdout, stderr) => {
                 if (error) {
                     console.log(error);
@@ -244,59 +244,65 @@ class Model {
             destinations: [],
             trades: []
         };
-        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, { useUnifiedTopology: true });
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, {useUnifiedTopology: true});
         const journalDB = client.db(DB);
         const journal = await journalDB.collection(COLLECTION);
         const departures = await journal.aggregate([
             {
-                $match : { $and: [{ startDate: { $gte: start } }, { endDate: { $lte: end } },
-                        {"departure.name": {$ne: ""}}]}
-            },
-            {
-                $group : {
-                    _id : "$departure.name",
-                    count: { $sum: 1 }
+                $match: {
+                    $and: [{startDate: {$gte: start}}, {endDate: {$lte: end}},
+                        {"departure.name": {$ne: ""}}]
                 }
             },
             {
-                $sort : { count: -1 }
+                $group: {
+                    _id: "$departure.name",
+                    count: {$sum: 1}
+                }
+            },
+            {
+                $sort: {count: -1}
             }
         ]).limit(10).toArray().catch(() => {
             throw new Error("Server Error!");
         });
         const destinations = await journal.aggregate([
             {
-                $match : { $and: [{ startDate: { $gte: start } }, { endDate: { $lte: end } },
-                        {"destination.name": {$ne: ""}}]}
-            },
-            {
-                $group : {
-                    _id : "$destination.name",
-                    count: { $sum: 1 }
+                $match: {
+                    $and: [{startDate: {$gte: start}}, {endDate: {$lte: end}},
+                        {"destination.name": {$ne: ""}}]
                 }
             },
             {
-                $sort : { count: -1 }
+                $group: {
+                    _id: "$destination.name",
+                    count: {$sum: 1}
+                }
+            },
+            {
+                $sort: {count: -1}
             }
         ]).limit(10).toArray().catch(() => {
             throw new Error("Server Error!");
         });
         const trades = await journal.aggregate([
             {
-                $match : { $and: [{ startDate: { $gte: start } }, { endDate: { $lte: end } },
-                        {"departure.name": {$ne: ""}}, {"destination.name": {$ne: ""}}]}
-            },
-            {
-                $group : {
-                    _id : {
-                        from: "$departure.name",
-                        to: "$destination.name"
-                    },
-                    count: { $sum: 1 }
+                $match: {
+                    $and: [{startDate: {$gte: start}}, {endDate: {$lte: end}},
+                        {"departure.name": {$ne: ""}}, {"destination.name": {$ne: ""}}]
                 }
             },
             {
-                $sort : { count: -1 }
+                $group: {
+                    _id: {
+                        from: "$departure.name",
+                        to: "$destination.name"
+                    },
+                    count: {$sum: 1}
+                }
+            },
+            {
+                $sort: {count: -1}
             }
         ]).limit(10).toArray().catch(() => {
             throw new Error("Server Error!");
@@ -312,6 +318,83 @@ class Model {
                 elem.count, elem.count.toString()]);
         }
         return portsStatisticsObject;
+    }
+
+    async getTripsStatistics(start, end) {
+        const tripsStatisticsObject = {
+            averages: [],
+            voyages: [],
+            mileage: []
+        };
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, {useUnifiedTopology: true});
+        const journalDB = client.db(DB);
+        const journal = await journalDB.collection(COLLECTION);
+        const voyages = await journal.aggregate([
+            {
+                $match: {
+                    $and: [{endDate: {$gte: start}}, {endDate: {$lte: end}},
+                        {"shipName": {$ne: ""}}]
+                }
+            },
+            {
+                $group: {
+                    _id: "$shipName",
+                    count: {$sum: 1}
+                }
+            },
+            {
+                $sort: {count: -1}
+            }
+        ]).limit(10).toArray().catch(() => {
+            throw new Error("Server Error!");
+        });
+        const mileage = await journal.aggregate([
+            {
+                $match: {
+                    $and: [{endDate: {$gte: start}}, {endDate: {$lte: end}},
+                        {"shipName": {$ne: ""}}]
+                }
+            },
+            {
+                $group: {
+                    _id: "$shipName",
+                    mileage: {$sum: "$distance"}
+                }
+            },
+            {
+                $sort: {mileage: -1}
+            }
+        ]).limit(10).toArray().catch(() => {
+            throw new Error("Server Error!");
+        });
+        const averages = await journal.aggregate([
+            {
+                $match: {
+                    $and: [{endDate: {$gte: start}}, {endDate: {$lte: end}}]
+                }
+            },
+            {
+                $group: {
+                    _id: {$dateToString: {format: "%Y", date: "$endDate"}},
+                    average: {$avg: "$distance"}
+                }
+            },
+            {
+                $sort: {_id: 1}
+            }
+        ]).toArray().catch(() => {
+            throw new Error("Server Error!");
+        });
+        for (let elem of voyages) {
+            tripsStatisticsObject.voyages.push([elem._id, elem.count, elem.count.toString()]);
+        }
+        for (let elem of mileage) {
+            tripsStatisticsObject.mileage.push([elem._id, elem.mileage, elem.mileage.toString()]);
+        }
+        for (let elem of averages) {
+            tripsStatisticsObject.averages.push([elem._id, elem.average, elem.average.toString()]);
+        }
+        return tripsStatisticsObject;
     }
 }
 

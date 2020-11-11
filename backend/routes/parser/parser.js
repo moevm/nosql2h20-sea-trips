@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const AVR_EARTH_RAD = 6371;
+const AVR_EARTH_RAD = 6372.795;
 
 function readTextFile(file, callback) {
     const rawRecords = fs.readFileSync(file, 'utf8');
@@ -40,8 +40,10 @@ function getMockedData(file) {
             const cos1 = Math.cos(departure.lat * Math.PI / 180.0);
             const cos2 = Math.cos(destination.lat * Math.PI / 180.0);
             const cos3 = Math.cos((departure.lon - destination.lon) * Math.PI / 180.0);
-            const radDistance = Math.acos(sin1 * sin2 + cos1 * cos2 * cos3);
-            object.distance = radDistance * AVR_EARTH_RAD;
+            const sin3 = Math.sin((departure.lon - destination.lon) * Math.PI / 180.0);
+            const tempResult1 = Math.sqrt(Math.pow(cos2 * sin3, 2) + Math.pow(cos1 * sin2 - sin1 * cos2 * cos3, 2));
+            const tempResult2 = sin1 * sin2 + cos1 * cos2 * cos3
+            object.distance = Math.atan2(tempResult1, tempResult2) * AVR_EARTH_RAD;
             recordsList[line] = object
         }
     });

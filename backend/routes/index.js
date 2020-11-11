@@ -48,7 +48,7 @@ router.post('/set-filter-and-sorting', function (req, res) {
 });
 
 /* GET count of records in the journal */
-router.get('/trips-count', function(req, res) {
+router.get('/trips-count', function (req, res) {
     model.recordsCount().then(result => {
         res.send({tripsCount: result});
     }).catch(() => {
@@ -58,7 +58,7 @@ router.get('/trips-count', function(req, res) {
 });
 
 /* GET the record by its ID*/
-router.get('/trip/:id', function(req, res) {
+router.get('/trip/:id', function (req, res) {
     let ID = req.params.id;
     model.getRecord(ID).then(record => {
         if (record === null) {
@@ -76,7 +76,7 @@ router.get('/trip/:id', function(req, res) {
    offset - index of the first entry to get
    limit - max number of entries to get
 */
-router.get('/trips', function(req, res) {
+router.get('/trips', function (req, res) {
     let offset = parseInt(req.query.offset, 10);
     if (offset < 0) {
         res.status(400);
@@ -96,7 +96,7 @@ router.get('/trips', function(req, res) {
 });
 
 /* ADD new record into the journal */
-router.post('/add-trip', function(req, res) {
+router.post('/add-trip', function (req, res) {
     req.body.distance = parseFloat(req.body.distance);
     if (isNaN(req.body.distance)) {
         res.status(400);
@@ -112,7 +112,7 @@ router.post('/add-trip', function(req, res) {
 });
 
 /* DELETE the record from the journal by its ID */
-router.delete('/trip', function(req, res) {
+router.delete('/trip', function (req, res) {
     const entityID = req.query.ID;
     model.removeRecord(entityID).then(result => {
         res.send(result);
@@ -151,32 +151,50 @@ router.post('/import-data', function (req, res) {
 });
 
 /*
-   GET statistics information for period of time
+   GET ports statistics information for period of time
    start - start of period (in years)
    end - end of period (in years)
-   statistic - kind of statistics data
 */
-router.get('/statistics', function (req, res) {
+router.get('/ports-statistics', function (req, res) {
     const start = parseInt(req.query.start, 10);
     const end = parseInt(req.query.end, 10);
-    const statistic = req.query.statistic;
-    if (isNaN(start) || isNaN(end) || !statistic || !STATISTIC_TYPES.includes(statistic)) {
+    if (isNaN(start) || isNaN(end)) {
         res.status(400);
-        res.send({message: "Incorrect query parameter(s)"});
+        res.send({message: "Incorrect ports statistics request parameter(s)"});
         return;
     }
     const startDate = new Date(start, 0, 0, 0, 0, 0, 0);
-    const endDate = new Date(end, 0, 0, 0, 0, 0, 0);
-    if (statistic === "ports") {
-        model.getPortsStatistics(startDate, endDate).then(result => {
-            res.send(result);
-        }).catch(() => {
-            res.status(500);
-            res.send({message: "Internal Server Error"});
-        });
-    } else {
-        res.send({message: "Success"});
+    const endDate = new Date(end + 1, 0, 0, 0, 0, 0, 0);
+    model.getPortsStatistics(startDate, endDate).then(result => {
+        res.send(result);
+    }).catch(() => {
+        res.status(500);
+        res.send({message: "Internal Server Error"});
+    });
+});
+
+/*
+   GET trips statistics information for period of time
+   start - start of period (in years)
+   end - end of period (in years)
+*/
+router.get('/trips-statistics', function (req, res) {
+    const end = parseInt(req.query.end, 10);
+    const start = parseInt(req.query.start, 10);
+    if (isNaN(end) || isNaN(start)) {
+        res.status(400);
+        res.send({message: "Incorrect trips statistics request parameter(s)"});
+        return;
     }
+    const startDate = new Date(start, 0, 0, 0, 0, 0, 0);
+    const endDate = new Date(end + 1, 0, 0, 0, 0, 0, 0);
+    console.log(endDate);
+    model.getTripsStatistics(startDate, endDate).then(result => {
+        res.send(result);
+    }).catch(() => {
+        res.status(500);
+        res.send({message: "Internal Server Error"});
+    });
 });
 
 module.exports = router;
