@@ -1,38 +1,44 @@
 <template>
     <div>
-        <ColumnChart v-bind:id="'departures'" v-bind:data="departureData" v-bind:options="departureOption" v-on:click="$emit('click', $event)"/>
-        <ColumnChart v-bind:id="'destinations'" v-bind:data="destinationData" v-bind:options="destinationOption" v-on:click="$emit('click', $event)"/>
-        <ColumnChart v-bind:id="'trades'" v-bind:data="tradeData" v-bind:options="tradeOption" v-on:click="$emit('click', $event)"/>
+        <div>
+            <div style="font-weight: bold; text-align: left; margin-left: 50px">The most popular departures:</div>
+            <ColumnChart v-bind:id="'departures'" v-bind:data="statistic.departures" v-bind:options="portsOptions" v-bind:height="600" v-on:click="$emit('click', $event)"/>
+        </div>
+        <div>
+            <div style="font-weight: bold; text-align: left; margin-left: 50px">The most popular destination:</div>
+            <ColumnChart v-bind:id="'destinations'" v-bind:data="statistic.destinations" v-bind:options="portsOptions" v-bind:height="600" v-on:click="$emit('click', $event)"/>
+        </div>
+        <div>
+            <div style="font-weight: bold; text-align: left; margin-left: 50px">The most popular trade routes:</div>
+            <ColumnChart v-bind:id="'trades'" v-bind:data="statistic.trades" v-bind:options="tradesOptions" v-bind:height="600" v-on:click="$emit('click', $event)"/>
+        </div>
     </div>
 </template>
 
 <script>
     import ColumnChart from "./ColumnChart";
+    import PortStatisticData from "../classes/PortStatisticData";
 
     export default {
         name: "PortStatistic",
         components: {ColumnChart},
+        props: {
+            statistic: PortStatisticData
+        },
         data: function() {
             return {
-                departureData: [
-                    ['Departure', 'Voyages Count', {role: 'annotation'}],
-                    ['London', 270, '270'],
-                    ['New York', 256, '256'],
-                    ['San Francisco', 215, '171'],
-                    ['Los Angeles', 171, '171'],
-                ],
-                departureOption: {
-                    title: 'The most popular departures:',
+                portsOptions: {
                     legend: {
                         position: 'top',
                         alignment: 'center',
                     },
                     colors: ['darkgreen'],
-                    //width: 1000,
                     chartArea: {
                         left: 100,
-                        //top: 0,
-                        //width:
+                        top: 50,
+                        right: 50,
+                        width: "100%",
+                        height: "75%"
                     },
                     bar: {
                         groupWidth: "80%"
@@ -41,52 +47,17 @@
                         baseline: 0,
                     }
                 },
-                destinationData: [
-                    ['Destination', 'Voyages Count', {role: 'annotation'}],
-                    ['London', 3525, '3525'],
-                    ['New York', 3123, '3123'],
-                    ['San Francisco', 2966, '2966'],
-                    ['Los Angeles', 2570, '2570'],
-                ],
-                destinationOption: {
-                    title: 'The most popular destination:',
+                tradesOptions: {
                     legend: {
                         position: 'top',
                         alignment: 'center',
                     },
                     colors: ['darkgreen'],
-                    //width: 1000,
                     chartArea: {
-                        left: 100,
-                        //top: 0,
-                        //width:
-                    },
-                    bar: {
-                        groupWidth: "80%"
-                    },
-                    vAxis: {
-                        baseline: 0,
-                    }
-                },
-                tradeData: [
-                    ['Trade', 'Voyages Count', {role: 'annotation'}],
-                    ['London -> New York', 270, '270'],
-                    ['New York -> San Francisco', 256, '256'],
-                    ['Salem -> Zanzibar', 215, '215'],
-                    ['Saint Petersburg -> London', 171, '171'],
-                ],
-                tradeOption: {
-                    title: 'The most popular trade routes:',
-                    legend: {
-                        position: 'top',
-                        alignment: 'center',
-                    },
-                    colors: ['darkgreen'],
-                    //width: 1000,
-                    chartArea: {
-                        left: 100,
-                        //top: 0,
-                        //width:
+                        left: 300,
+                        top: 50,
+                        right: 50,
+                        width: "100%",
                     },
                     bar: {
                         groupWidth: "80%"
@@ -97,7 +68,7 @@
                     orientation: 'vertical'
                 },
             }
-        },
+        }
     }
 </script>
 
