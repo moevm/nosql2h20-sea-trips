@@ -1,5 +1,5 @@
 <template>
-    <div v-bind:id="id" style="width: 100%; height: 500px;"/>
+    <div v-bind:id="id" ref="diagram" style="width: 100%; min-height: 500px;"/>
 </template>
 
 <script>
@@ -11,6 +11,7 @@
             id: String,
             data: Array,
             options: Object,
+            height: Number
         },
         created() {
             this.$loadScript('https://www.gstatic.com/charts/loader.js')
@@ -28,6 +29,9 @@
                         .catch(error => Handler.Error(error, 'CORECHART NOT LOADED'));
                 })
                 .catch(error => Handler.Error(error, 'DIAGRAMS NOT LOADED'));
+        },
+        mounted() {
+            this.$refs.diagram.style.height = `${this.height}px`;
         }
     }
 </script>
