@@ -13,6 +13,18 @@ function parseStringToDate(str) {
         parseInt(str.substr(6, 2)), 0, 0, 0);
 }
 
+function calcDistance(depLat, depLon, destLat, destLon) {
+    const sin1 = Math.sin(depLat * Math.PI / 180.0);
+    const sin2 = Math.sin(destLat * Math.PI / 180.0);
+    const cos1 = Math.cos(depLat * Math.PI / 180.0);
+    const cos2 = Math.cos(destLat * Math.PI / 180.0);
+    const cos3 = Math.cos((depLon - destLon) * Math.PI / 180.0);
+    const sin3 = Math.sin((depLon - destLon) * Math.PI / 180.0);
+    const tempResult1 = Math.sqrt(Math.pow(cos2 * sin3, 2) + Math.pow(cos1 * sin2 - sin1 * cos2 * cos3, 2));
+    const tempResult2 = sin1 * sin2 + cos1 * cos2 * cos3;
+    return Math.atan2(tempResult1, tempResult2) * AVR_EARTH_RAD;
+}
+
 function getMockedData(file) {
     let recordsList = [];
     readTextFile(file, function (sourceText) {
@@ -35,15 +47,7 @@ function getMockedData(file) {
             object.departure = departure;
             object.destination = destination;
             object.commander = currentLine.substr(70, 16).trim();
-            const sin1 = Math.sin(departure.lat * Math.PI / 180.0);
-            const sin2 = Math.sin(destination.lat * Math.PI / 180.0);
-            const cos1 = Math.cos(departure.lat * Math.PI / 180.0);
-            const cos2 = Math.cos(destination.lat * Math.PI / 180.0);
-            const cos3 = Math.cos((departure.lon - destination.lon) * Math.PI / 180.0);
-            const sin3 = Math.sin((departure.lon - destination.lon) * Math.PI / 180.0);
-            const tempResult1 = Math.sqrt(Math.pow(cos2 * sin3, 2) + Math.pow(cos1 * sin2 - sin1 * cos2 * cos3, 2));
-            const tempResult2 = sin1 * sin2 + cos1 * cos2 * cos3
-            object.distance = Math.atan2(tempResult1, tempResult2) * AVR_EARTH_RAD;
+            object.distance = calcDistance(departure.lat, departure.lon, destination.lat, destination.lon);
             recordsList[line] = object
         }
     });

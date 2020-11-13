@@ -4,7 +4,6 @@ const {Model} = require('./model');
 
 const ACCEPTED_KEYS = ["shipName", "commander", "departureName", "destinationName",
     "startDate", "endDate", "distance"];
-const STATISTIC_TYPES = ["ports", "trips"];
 
 const checkKeys = function (keysObject) {
     const keys = Object.keys(keysObject);
@@ -89,6 +88,126 @@ router.get('/trips', function (req, res) {
     }
     model.getRecords(offset, limit).then(records => {
         res.send(records);
+    }).catch(() => {
+        res.status(500);
+        res.send({message: "Internal Server Error"});
+    });
+});
+
+/*
+   GET journal records with the specific departure name
+   start - start of period (in years)
+   end - end of period (in years)
+   dep - name of the departure city
+*/
+router.get('/trips/departure', function (req, res) {
+    const start = parseInt(req.query.start, 10);
+    const end = parseInt(req.query.end, 10);
+    if (isNaN(start) || isNaN(end)) {
+        res.status(400);
+        res.send({message: "Incorrect parameter(s) in request for records with the specific departure name"});
+        return;
+    }
+    const departureName = req.query.dep;
+    const startDate = new Date(start, 0, 0, 0, 0, 0, 0);
+    const endDate = new Date(end + 1, 0, 0, 0, 0, 0, 0);
+    model.getRecordsByDeparture(startDate, endDate, departureName).then(result => {
+        res.send(result);
+    }).catch(() => {
+        res.status(500);
+        res.send({message: "Internal Server Error"});
+    });
+});
+
+/*
+   GET journal records with the specific destination name
+   start - start of period (in years)
+   end - end of period (in years)
+   dest - name of the destination city
+*/
+router.get('/trips/destination', function (req, res) {
+    const start = parseInt(req.query.start, 10);
+    const end = parseInt(req.query.end, 10);
+    if (isNaN(start) || isNaN(end)) {
+        res.status(400);
+        res.send({message: "Incorrect parameter(s) in request for records with the specific destination name"});
+        return;
+    }
+    const destinationName = req.query.dest;
+    const startDate = new Date(start, 0, 0, 0, 0, 0, 0);
+    const endDate = new Date(end + 1, 0, 0, 0, 0, 0, 0);
+    model.getRecordsByDestination(startDate, endDate, destinationName).then(result => {
+        res.send(result);
+    }).catch(() => {
+        res.status(500);
+        res.send({message: "Internal Server Error"});
+    });
+});
+
+/*
+   GET journal records with the specific destination and departure names
+   start - start of period (in years)
+   end - end of period (in years)
+   dep - name of the departure city
+   dest - name of the destination city
+*/
+router.get('/trips/trade', function (req, res) {
+    const start = parseInt(req.query.start, 10);
+    const end = parseInt(req.query.end, 10);
+    if (isNaN(start) || isNaN(end)) {
+        res.status(400);
+        res.send({message: "Incorrect parameter(s) in request for records with the specific destination and departure names"});
+        return;
+    }
+    const destinationName = req.query.dest;
+    const departureName = req.query.dep;
+    const startDate = new Date(start, 0, 0, 0, 0, 0, 0);
+    const endDate = new Date(end + 1, 0, 0, 0, 0, 0, 0);
+    model.getRecordsByTrade(startDate, endDate, departureName, destinationName).then(result => {
+        res.send(result);
+    }).catch(() => {
+        res.status(500);
+        res.send({message: "Internal Server Error"});
+    });
+});
+
+/*
+   GET journal records with the specific ship name
+   start - start of period (in years)
+   end - end of period (in years)
+   ship - name of the ship
+*/
+router.get('/trips/ship', function (req, res) {
+    const start = parseInt(req.query.start, 10);
+    const end = parseInt(req.query.end, 10);
+    if (isNaN(start) || isNaN(end)) {
+        res.status(400);
+        res.send({message: "Incorrect parameter(s) in request for records with the specific ship name"});
+        return;
+    }
+    const shipName = req.query.ship;
+    const startDate = new Date(start, 0, 1, 0, 0, 1, 0);
+    const endDate = new Date(end + 1, 0, 0, 0, 0, 0, 0);
+    model.getRecordsByShip(startDate, endDate, shipName).then(result => {
+        res.send(result);
+    }).catch(() => {
+        res.status(500);
+        res.send({message: "Internal Server Error"});
+    });
+});
+
+/* GET journal records for a specific year */
+router.get('/trips/year', function (req, res) {
+    const year = parseInt(req.query.year, 10);
+    if (isNaN(year)) {
+        res.status(400);
+        res.send({message: "Incorrect year parameter: should be number or numeral string"});
+        return;
+    }
+    const startDate = new Date(year, 0, 1, 0, 0, 1, 0);
+    const endDate = new Date(year + 1, 0, 0, 0, 0, 0, 0);
+    model.getRecordsByPeriodOfTime(startDate, endDate).then(result => {
+        res.send(result);
     }).catch(() => {
         res.status(500);
         res.send({message: "Internal Server Error"});
@@ -186,9 +305,8 @@ router.get('/trips-statistics', function (req, res) {
         res.send({message: "Incorrect trips statistics request parameter(s)"});
         return;
     }
-    const startDate = new Date(start, 0, 0, 0, 0, 0, 0);
+    const startDate = new Date(start, 0, 1, 0, 0, 1, 0);
     const endDate = new Date(end + 1, 0, 0, 0, 0, 0, 0);
-    console.log(endDate);
     model.getTripsStatistics(startDate, endDate).then(result => {
         res.send(result);
     }).catch(() => {
