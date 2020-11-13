@@ -159,6 +159,79 @@ class Model {
         return records.slice(offset, offset + limit);
     }
 
+    async getRecordsByDeparture(start, end, departureName) {
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, {useUnifiedTopology: true});
+        const journalDB = client.db(DB);
+        const journal = await journalDB.collection(COLLECTION);
+        const records = await journal.find({
+            startDate: {$gte: start},
+            endDate: {$lte: end},
+            "departure.name": departureName
+        }).toArray().catch(() => {
+            throw new Error("Server Error!");
+        });
+        await client.close();
+        return records;
+    }
+
+    async getRecordsByDestination(start, end, destinationName) {
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, {useUnifiedTopology: true});
+        const journalDB = client.db(DB);
+        const journal = await journalDB.collection(COLLECTION);
+        const records = await journal.find({
+            startDate: {$gte: start},
+            endDate: {$lte: end},
+            "destination.name": destinationName
+        }).toArray().catch(() => {
+            throw new Error("Server Error!");
+        });
+        await client.close();
+        return records;
+    }
+
+    async getRecordsByTrade(start, end, depName, destName) {
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, {useUnifiedTopology: true});
+        const journalDB = client.db(DB);
+        const journal = await journalDB.collection(COLLECTION);
+        const records = await journal.find({
+            startDate: {$gte: start},
+            endDate: {$lte: end},
+            "departure.name": depName,
+            "destination.name": destName
+        }).toArray().catch(() => {
+            throw new Error("Server Error!");
+        });
+        await client.close();
+        return records;
+    }
+
+    async getRecordsByShip(start, end, shipName) {
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, {useUnifiedTopology: true});
+        const journalDB = client.db(DB);
+        const journal = await journalDB.collection(COLLECTION);
+        const records = await journal.find({
+            endDate: {$lte: end, $gte: start},
+            shipName: shipName
+        }).toArray().catch(() => {
+            throw new Error("Server Error!");
+        });
+        await client.close();
+        return records;
+    }
+
+    async getRecordsByPeriodOfTime(start, end) {
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, {useUnifiedTopology: true});
+        const journalDB = client.db(DB);
+        const journal = await journalDB.collection(COLLECTION);
+        const records = await journal.find({
+            endDate: {$lte: end, $gte: start},
+        }).toArray().catch(() => {
+            throw new Error("Server Error!");
+        });
+        await client.close();
+        return records;
+    }
+
     async addRecord(record) {
         let resultMessage = {};
         const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, {useUnifiedTopology: true});
@@ -389,10 +462,10 @@ class Model {
             tripsStatisticsObject.voyages.push([elem._id, elem.count, elem.count.toString()]);
         }
         for (let elem of mileage) {
-            tripsStatisticsObject.mileage.push([elem._id, elem.mileage, elem.mileage.toString()]);
+            tripsStatisticsObject.mileage.push([elem._id, Math.round(elem.mileage), Math.round(elem.mileage).toString()]);
         }
         for (let elem of averages) {
-            tripsStatisticsObject.averages.push([elem._id, elem.average, elem.average.toString()]);
+            tripsStatisticsObject.averages.push([elem._id, Math.round(elem.average), Math.round(elem.average).toString()]);
         }
         return tripsStatisticsObject;
     }
