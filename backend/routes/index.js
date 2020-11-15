@@ -24,7 +24,7 @@ const checkSortingValues = function (sortingObject) {
 
 const model = new Model();
 model.init().catch(err => {
-    console.log(err);
+    console.log(`can not initialize Mongo Client: ${err}`);
 });
 
 /* SET filter and sort function for DB*/
