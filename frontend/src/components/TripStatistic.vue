@@ -2,15 +2,15 @@
     <div>
         <div>
             <div style="font-weight: bold; text-align: left; margin-left: 50px">Average distance per years:</div>
-            <ColumnChart v-bind:id="'average'" v-bind:data="statistic.averages" v-bind:options="averageDistanceOption" v-bind:height="statistic.averages.length * 40" v-on:click="$emit('click', $event)"/>
+            <ColumnChart v-bind:id="'average'" v-bind:data="statistic.averages" v-bind:options="averageDistanceOption" v-bind:height="statistic.averages.length * 40" v-on:click="AverageChartClick($event)"/>
         </div>
         <div>
             <div style="font-weight: bold; text-align: left; margin-left: 50px">Ships with the biggest count of voyages:</div>
-            <ColumnChart v-bind:id="'voyages'" v-bind:data="statistic.voyages" v-bind:options="shipsOptions" v-bind:height="600" v-on:click="$emit('click', $event)"/>
+            <ColumnChart v-bind:id="'voyages'" v-bind:data="statistic.voyages" v-bind:options="shipsOptions" v-bind:height="600" v-on:click="VoyageChartClick($event)"/>
         </div>
         <div>
             <div style="font-weight: bold; text-align: left; margin-left: 50px">Ships with the biggest mileage:</div>
-            <ColumnChart v-bind:id="'mileage'" v-bind:data="statistic.mileage" v-bind:options="shipsOptions" v-bind:height="600" v-on:click="$emit('click', $event)"/>
+            <ColumnChart v-bind:id="'mileage'" v-bind:data="statistic.mileage" v-bind:options="shipsOptions" v-bind:height="600" v-on:click="MileageChartClick($event)"/>
         </div>
     </div>
 </template>
@@ -70,6 +70,20 @@
                 }
             }
         },
+        methods: {
+            AverageChartClick: function (event) {
+                let year = this.statistic.averages[event[0].row + 1][0];
+                this.$emit('click', `http://localhost:3000/sea-journal/trips/year?year=${year}`, 'Ship Records', false)
+            },
+            VoyageChartClick: function (event) {
+                let ship = this.statistic.voyages[event[0].row + 1][0];
+                this.$emit('click', `http://localhost:3000/sea-journal/trips/ship?ship=${ship}`, 'Ship Records')
+            },
+            MileageChartClick: function (event) {
+                let ship = this.statistic.mileage[event[0].row + 1][0];
+                this.$emit('click', `http://localhost:3000/sea-journal/trips/ship?ship=${ship}`, 'Ship Records')
+            },
+        }
     }
 </script>
 
