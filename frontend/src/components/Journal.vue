@@ -43,7 +43,7 @@
         <ModalWindow v-if="modalWindow.isVisible" v-bind:header="modalWindow.header" v-bind:text="modalWindow.text" v-on:yes="DeleteRow()" v-on:no="modalWindow.isVisible = false"></ModalWindow>
         <AddRecord v-if="addRecordWindow.isVisible" v-on:add-trip="AddRow" v-on:close="addRecordWindow.isVisible = false"></AddRecord>
         <SortAndFilterTrip v-if="sortAndFilter.isVisible" v-on:filter-sort="GetTrips" v-on:close="sortAndFilter.isVisible = false"/>
-        <BackUp v-if="backUpWindow.isVisible" v-on:no="backUpWindow.isVisible = false"></BackUp>
+        <BackUp v-if="backUpWindow.isVisible" v-on:import-done="GetTrips(0)" v-on:no="backUpWindow.isVisible = false"></BackUp>
     </div>
 </template>
 

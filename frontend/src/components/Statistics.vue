@@ -70,7 +70,7 @@
                 portStatistic: new PortStatisticData(),
                 tableModal: {
                     isVisible: false,
-                    header: 'FFFFF',
+                    header: '',
                     trips: []
                 }
             }
@@ -82,7 +82,6 @@
                     requestURL = url.concat(`&start=${this.start}&end=${this.end}`);
                 }
                 await axios.get(requestURL).then(response => {
-                    //console.log(response.data);
                     this.tableModal.trips.length = 0;
                     let trips = response.data;
                     trips.forEach(item => {

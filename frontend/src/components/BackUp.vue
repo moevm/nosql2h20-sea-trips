@@ -57,7 +57,7 @@
                     let link = document.createElement('a');
                     link.setAttribute('download', 'sea-trips-backup.json');
                     let type = 'data:application/json;base64, ';
-                    let base = btoa(response.data);
+                    let base = btoa(unescape(encodeURIComponent(response.data)));
                     link.href = type + base;
                     link.click();
                 }, error => Handler.Error(error, 'ERROR DOWNLOAD FILE'));
@@ -81,6 +81,7 @@
                     headers: { 'Content-Type': 'multipart/form-data' }
                 }).then(response => {
                     Handler.Success(response, 'DB IMPORT COMPLETED');
+                    this.$emit('import-done');
                 }, error => Handler.Error(error, 'DB IMPORT FAILED'));
             }
         }
