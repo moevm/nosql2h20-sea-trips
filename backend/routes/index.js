@@ -300,13 +300,19 @@ router.get('/ports-statistics', function (req, res) {
 router.get('/trips-statistics', function (req, res) {
     const end = parseInt(req.query.end, 10);
     const start = parseInt(req.query.start, 10);
-    if (isNaN(end) || isNaN(start)) {
+    if (isNaN(end) || isNaN(start) || end < 0 || start < 0) {
         res.status(400);
         res.send({message: "Incorrect trips statistics request parameter(s)"});
         return;
     }
     const startDate = new Date(start, 0, 1, 0, 0, 1, 0);
+    if (start < 100) {
+        startDate.setFullYear(start);
+    }
     const endDate = new Date(end + 1, 0, 0, 0, 0, 0, 0);
+    if (end + 1 < 100) {
+        endDate.setFullYear(end + 1);
+    }
     model.getTripsStatistics(startDate, endDate).then(result => {
         res.send(result);
     }).catch(() => {

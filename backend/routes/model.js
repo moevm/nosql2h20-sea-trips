@@ -295,6 +295,7 @@ class Model {
         const journalDB = client.db(DB);
         const journal = await journalDB.collection(COLLECTION);
         await journal.deleteMany({});
+        await client.close();
         const command = `mongoimport --host=\"${ADDRESS}:${PORT}\" ` +
             `--collection=${COLLECTION} --db=${DB} --file=${filePath}`;
         return new Promise(resolve => {
@@ -390,6 +391,7 @@ class Model {
             portsStatisticsObject.trades.push([`${elem._id.from} -> ${elem._id.to}`,
                 elem.count, elem.count.toString()]);
         }
+        await client.close();
         return portsStatisticsObject;
     }
 
@@ -448,7 +450,7 @@ class Model {
             },
             {
                 $group: {
-                    _id: {$dateToString: {format: "%Y", date: "$endDate"}},
+                    _id: {$toInt: {$dateToString: {format: "%Y", date: "$endDate"}}},
                     average: {$avg: "$distance"}
                 }
             },
@@ -465,8 +467,9 @@ class Model {
             tripsStatisticsObject.mileage.push([elem._id, Math.round(elem.mileage), Math.round(elem.mileage).toString()]);
         }
         for (let elem of averages) {
-            tripsStatisticsObject.averages.push([elem._id, Math.round(elem.average), Math.round(elem.average).toString()]);
+            tripsStatisticsObject.averages.push([elem._id.toString(), Math.round(elem.average), Math.round(elem.average).toString()]);
         }
+        await client.close();
         return tripsStatisticsObject;
     }
 }
