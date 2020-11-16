@@ -42,6 +42,7 @@
         </div>
         <TripStatistic v-bind:statistic="tripStatistic" v-if="isVisibleTripStatistic" v-on:click="ClickOnAChartData"/>
         <PortStatistic v-bind:statistic="portStatistic" v-if="isVisiblePortStatistic" v-on:click="ClickOnAChartData"/>
+        <TableModal v-bind:trips="tableModal.trips" v-bind:header="tableModal.header" v-if="tableModal.isVisible" v-on:close="tableModal.isVisible = false"/>
     </div>
 </template>
 
@@ -52,10 +53,12 @@
     import Handler from "../classes/Handler";
     import PortStatisticData from "../classes/PortStatisticData";
     import TripStatisticData from "../classes/TripStatisticData";
+    import TableModal from "./TableModal";
+    import Trip from "../classes/Trip";
 
     export default {
         name: "Statistics",
-        components: {PortStatistic, TripStatistic},
+        components: {TableModal, PortStatistic, TripStatistic},
         data: function() {
             return {
                 isVisibleTripStatistic: false,
@@ -64,12 +67,32 @@
                 start: '',
                 end: '',
                 tripStatistic: new TripStatisticData(),
-                portStatistic: new PortStatisticData()
+                portStatistic: new PortStatisticData(),
+                tableModal: {
+                    isVisible: false,
+                    header: 'FFFFF',
+                    trips: []
+                }
             }
         },
         methods: {
-            ClickOnAChartData: function (data) {
-                console.log(data);
+            ClickOnAChartData: async function (url, header, isUseDateParam = true) {
+                let requestURL = url;
+                if (isUseDateParam) {
+                    requestURL = url.concat(`&start=${this.start}&end=${this.end}`);
+                }
+                await axios.get(requestURL).then(response => {
+                    //console.log(response.data);
+                    this.tableModal.trips.length = 0;
+                    let trips = response.data;
+                    trips.forEach(item => {
+                        let trip = new Trip();
+                        trip.CopyValuesFromBdEntity(item);
+                        this.tableModal.trips.push(trip);
+                    });
+                    this.tableModal.header = header;
+                    this.tableModal.isVisible = true;
+                }, error => Handler.Error(error));
             },
             GetData: async function (event) {
                 event.preventDefault();
