@@ -3,7 +3,7 @@ const ObjectID = require('mongodb').ObjectID;
 const {exec} = require('child_process');
 const getMockedData = require('./parser/parser');
 
-const ADDRESS = "docker-db";
+const ADDRESS = "seatrips-docker-db";
 const PORT = "27017";
 const DB = "journalDB";
 const COLLECTION = "journal";

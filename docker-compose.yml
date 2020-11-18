@@ -1,17 +1,17 @@
 version: "3"
 services:
-  server:
+  seatrips-server:
     build: backend/
     ports:
       - "3000:3000"
     depends_on:
-      - db
-    container_name: docker-server
-  client:
+      - seatrips-db
+    container_name: seatrips-docker-server
+  seatrips-client:
     build: frontend/
     ports:
       - "8080:8080"
-    container_name: docker-client
-  db:
+    container_name: seatrips-docker-client
+  seatrips-db:
     image: mongo:latest
-    container_name: docker-db
+    container_name: seatrips-docker-db
