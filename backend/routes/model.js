@@ -7,7 +7,8 @@ const ADDRESS = "seatrips-docker-db";
 const PORT = "27017";
 const DB = "journalDB";
 const COLLECTION = "journal";
-let MOCK_FILE = `${__dirname}/parser/mock_data.txt`;
+const MOCK_FILE = `${__dirname}/parser/mock_data.txt`;
+const STRING_FIELDS = ["shipName", "commander", "departure.name", "destination.name"];
 
 const prepareFilterObject = function (filterObject) {
     if (filterObject.departureName) {
@@ -23,6 +24,14 @@ const prepareFilterObject = function (filterObject) {
     }
     if (filterObject.endDate) {
         filterObject.endDate = new Date(filterObject.endDate);
+    }
+    for (const [field, value] of Object.entries(filterObject)) {
+        if (STRING_FIELDS.includes(field)) {
+            filterObject[field] = {
+                $regex: `.*${value}.*`,
+                $options: 'i'
+            };
+        }
     }
 };
 const prepareSortingObject = function (sortingObject) {
@@ -134,6 +143,42 @@ class Model {
         });
         await client.close();
         return resultCount;
+    }
+
+    async getDeparturesAndDestination() {
+        const citiesObject = {
+            departures: [],
+            destinations: []
+        };
+        const client = await MongoClient.connect(`mongodb://${ADDRESS}:${PORT}`, {useUnifiedTopology: true});
+        const journalDB = client.db(DB);
+        const journal = await journalDB.collection(COLLECTION);
+        const departures = await journal.aggregate([
+            {
+                $group: {
+                    _id: "$departure.name",
+                }
+            },
+        ]).toArray().catch(() => {
+            throw new Error("Server Error!");
+        });
+        const destinations = await journal.aggregate([
+            {
+                $group: {
+                    _id: "$destination.name",
+                }
+            },
+        ]).toArray().catch(() => {
+            throw new Error("Server Error!");
+        });
+        for (let elem of departures) {
+            citiesObject.departures.push(elem._id);
+        }
+        for (let elem of destinations) {
+            citiesObject.destinations.push(elem._id);
+        }
+        await client.close();
+        return citiesObject;
     }
 
     async getRecord(recordID) {
