@@ -29,8 +29,6 @@ model.init().catch(err => {
 
 /* SET filter and sort function for DB*/
 router.post('/set-filter-and-sorting', function (req, res) {
-    console.log(model.filter);
-    console.log(model.sorting);
     try {
         checkKeys(req.body.filter);
         checkKeys(req.body.sorting);
@@ -42,7 +40,6 @@ router.post('/set-filter-and-sorting', function (req, res) {
     }
     model.setFilterAndSort(req.body);
     console.log(model.filter);
-    console.log(model.sorting);
     res.send({message: "Success"});
 });
 
@@ -50,6 +47,16 @@ router.post('/set-filter-and-sorting', function (req, res) {
 router.get('/trips-count', function (req, res) {
     model.recordsCount().then(result => {
         res.send({tripsCount: result});
+    }).catch(() => {
+        res.status(500);
+        res.send({message: "Internal Server Error"});
+    });
+});
+
+/* GET lists of the departures and the destinations */
+router.get('/cities-lists', function (req, res) {
+    model.getDeparturesAndDestination().then(result => {
+        res.send(result);
     }).catch(() => {
         res.status(500);
         res.send({message: "Internal Server Error"});
