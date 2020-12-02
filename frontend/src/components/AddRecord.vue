@@ -4,7 +4,7 @@
             <span class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close Modal" v-on:click="$emit('close')">&times;</span>
             <div class="w3-container w3-margin-top">
                 <h2>ADD NEW RECORD</h2>
-                <TripForm v-bind:is-required="true" v-on:submit="Add"/>
+                <TripForm v-bind:is-required="true" v-bind:is-select-port-list="false" v-on:submit="Add"/>
             </div>
         </div>
     </div>

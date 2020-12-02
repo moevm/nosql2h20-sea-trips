@@ -39,7 +39,10 @@
                     <div class="w3-left-align" style="padding: 0 20px">
                         <h4 style="font-weight: bold">FILTER BY:</h4>
                     </div>
-                    <TripForm v-bind:is-required="false" v-on:submit="Apply"/>
+                    <TripForm v-bind:is-required="false" v-bind:is-select-port-list="true" v-on:submit="Apply"/>
+                    <div class="w3-right-align" style="position: absolute; width: 100px; bottom: 16px; right: 40%">
+                        <input type="button" class="w3-btn w3-inline-block w3-light-grey w3-border w3-round" value="CLEAR" v-on:click="SendRequest({filter: {}, sorting: {}})">
+                    </div>
                 </div>
             </div>
         </div>
@@ -89,6 +92,9 @@
                     sorting: sorting
                 };
 
+                await this.SendRequest(data);
+            },
+            SendRequest: async function (data) {
                 await axios.post('http://localhost:3000/sea-journal/set-filter-and-sorting', data).then(response => {
                     Handler.Success(response, 'SET FILTER AND SORT');
                     this.$emit('filter-sort');

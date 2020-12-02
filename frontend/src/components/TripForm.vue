@@ -8,21 +8,41 @@
             <label for="commander" style="display: inline-block; width: 15%">Commander:</label>
             <input v-model="trip.commander" name="commander" type="text" id="commander" class="w3-input w3-border w3-round-large" style="display: inline-block; width: 85%" placeholder="Cpt. Jack Sparrow" required>
         </div>
-        <div class="w3-cell-row w3-margin-bottom ">
-            <div class="w3-cell" style="width: 15%">
-                <label for="departureName">Departure:</label>
+        <div>
+            <div v-if="!isSelectPortList" class="w3-cell-row w3-margin-bottom">
+                <div class="w3-cell" style="width: 15%">
+                    <label for="departureNameText">Departure:</label>
+                </div>
+                <div class="w3-cell" style="width: 35%">
+                    <input v-model="trip.departureName" name="departureName" type="text" id="departureNameText" class="w3-input w3-border w3-round-large" placeholder="Tartuga" required>
+                </div>
+                <div class="w3-cell" style="width: 15%; padding: 0 10px;">
+                    <label for="destinationNameText">Destination:</label>
+                </div>
+                <div class="w3-cell" style="width: 35%">
+                    <input v-model="trip.destinationName" name="destinationName" type="text" id="destinationNameText" class="w3-input w3-border w3-round-large" placeholder="London" required>
+                </div>
             </div>
-            <div class="w3-cell" style="width: 35%">
-                <input v-model="trip.departureName" name="departureName" type="text" id="departureName" class="w3-input w3-border w3-round-large" placeholder="Tartuga" required>
-            </div>
-            <div class="w3-cell" style="width: 15%; padding: 0 15px">
-                <label for="destinationName">Destination:</label>
-            </div>
-            <div class="w3-cell" style="width: 35%">
-                <input v-model="trip.destinationName" name="departureName" type="text" id="destinationName" class="w3-input w3-border w3-round-large" placeholder="London" required>
+            <div v-if="isSelectPortList" class="w3-cell-row w3-margin-bottom">
+                <div class="w3-cell" style="width: 15%">
+                    <label for="departureNameSelect">Departure:</label>
+                </div>
+                <div class="w3-cell" style="width: 35%">
+                    <select v-model="trip.departureName" name="departureName" id="departureNameSelect" class="w3-select w3-border w3-round-large">
+                        <option v-for="option in departures" v-bind:key="option" v-bind:value="option">{{ option }}</option>
+                    </select>
+                </div>
+                <div class="w3-cell" style="width: 15%; padding: 0 10px;">
+                    <label for="destinationNameSelect">Destination:</label>
+                </div>
+                <div class="w3-cell" style="width: 35%">
+                    <select v-model="trip.destinationName" name="destinationName" id="destinationNameSelect" class="w3-select w3-border w3-round-large">
+                        <option v-for="option in destinations" v-bind:key="option" v-bind:value="option">{{ option }}</option>
+                    </select>
+                </div>
             </div>
         </div>
-        <div class="w3-cell-row w3-margin-bottom ">
+        <div class="w3-cell-row w3-margin-bottom">
             <div class="w3-cell" style="width: 15%">
                 <label for="startDate">Start Date:</label>
             </div>
@@ -48,15 +68,20 @@
 
 <script>
     import Trip from "../classes/Trip";
+    import axios from "axios";
+    import Handler from "../classes/Handler";
 
     export default {
         name: "TripForm",
         props: {
-            isRequired: Boolean
+            isRequired: Boolean,
+            isSelectPortList: Boolean,
         },
         data: function () {
             return {
                 trip: new Trip(),
+                departures: [],
+                destinations: [],
             }
         },
         methods: {
@@ -64,6 +89,12 @@
                 event.preventDefault();
                 this.$emit('submit', this.trip);
             }
+        },
+        async created() {
+            await axios.get('http://localhost:3000/sea-journal/cities-lists').then(response => {
+                this.departures = response.data.departures;
+                this.destinations = response.data.destinations;
+            }, error => Handler.Error(error, 'PORT LIST NOT RECEIVED'));
         },
         mounted() {
             if (this.isRequired === false) {
