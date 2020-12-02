@@ -8,7 +8,7 @@ const PORT = "27017";
 const DB = "journalDB";
 const COLLECTION = "journal";
 const MOCK_FILE = `${__dirname}/parser/mock_data.txt`;
-const STRING_FIELDS = ["shipName", "commander", "departure.name", "destination.name"];
+const STRING_FIELDS = ["shipName", "commander"];
 
 const prepareFilterObject = function (filterObject) {
     if (filterObject.departureName) {
@@ -159,6 +159,9 @@ class Model {
                     _id: "$departure.name",
                 }
             },
+            {
+                $sort: {_id: 1}
+            }
         ]).toArray().catch(() => {
             throw new Error("Server Error!");
         });
@@ -168,6 +171,9 @@ class Model {
                     _id: "$destination.name",
                 }
             },
+            {
+                $sort: {_id: 1}
+            }
         ]).toArray().catch(() => {
             throw new Error("Server Error!");
         });
