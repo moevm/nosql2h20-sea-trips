@@ -116,8 +116,14 @@ router.get('/trips/departure', function (req, res) {
         return;
     }
     const departureName = req.query.dep;
-    const startDate = new Date(start, 0, 0, 0, 0, 0, 0);
+    const startDate = new Date(start, 0, 1, 0, 0, 1, 0);
+    if (start < 100) {
+        startDate.setFullYear(start);
+    }
     const endDate = new Date(end + 1, 0, 0, 0, 0, 0, 0);
+    if (end + 1 < 100) {
+        endDate.setFullYear(end + 1);
+    }
     model.getRecordsByDeparture(startDate, endDate, departureName).then(result => {
         res.send(result);
     }).catch(() => {
@@ -141,8 +147,14 @@ router.get('/trips/destination', function (req, res) {
         return;
     }
     const destinationName = req.query.dest;
-    const startDate = new Date(start, 0, 0, 0, 0, 0, 0);
+    const startDate = new Date(start, 0, 1, 0, 0, 1, 0);
+    if (start < 100) {
+        startDate.setFullYear(start);
+    }
     const endDate = new Date(end + 1, 0, 0, 0, 0, 0, 0);
+    if (end + 1 < 100) {
+        endDate.setFullYear(end + 1);
+    }
     model.getRecordsByDestination(startDate, endDate, destinationName).then(result => {
         res.send(result);
     }).catch(() => {
@@ -168,8 +180,14 @@ router.get('/trips/trade', function (req, res) {
     }
     const destinationName = req.query.dest;
     const departureName = req.query.dep;
-    const startDate = new Date(start, 0, 0, 0, 0, 0, 0);
+    const startDate = new Date(start, 0, 1, 0, 0, 1, 0);
+    if (start < 100) {
+        startDate.setFullYear(start);
+    }
     const endDate = new Date(end + 1, 0, 0, 0, 0, 0, 0);
+    if (end + 1 < 100) {
+        endDate.setFullYear(end + 1);
+    }
     model.getRecordsByTrade(startDate, endDate, departureName, destinationName).then(result => {
         res.send(result);
     }).catch(() => {
@@ -194,7 +212,13 @@ router.get('/trips/ship', function (req, res) {
     }
     const shipName = req.query.ship;
     const startDate = new Date(start, 0, 1, 0, 0, 1, 0);
+    if (start < 100) {
+        startDate.setFullYear(start);
+    }
     const endDate = new Date(end + 1, 0, 0, 0, 0, 0, 0);
+    if (end + 1 < 100) {
+        endDate.setFullYear(end + 1);
+    }
     model.getRecordsByShip(startDate, endDate, shipName).then(result => {
         res.send(result);
     }).catch(() => {
@@ -212,7 +236,13 @@ router.get('/trips/year', function (req, res) {
         return;
     }
     const startDate = new Date(year, 0, 1, 0, 0, 1, 0);
+    if (year < 100) {
+        startDate.setFullYear(year);
+    }
     const endDate = new Date(year + 1, 0, 0, 0, 0, 0, 0);
+    if (year + 1 < 100) {
+        endDate.setFullYear(year + 1);
+    }
     model.getRecordsByPeriodOfTime(startDate, endDate).then(result => {
         res.send(result);
     }).catch(() => {
@@ -290,7 +320,13 @@ router.get('/ports-statistics', function (req, res) {
         return;
     }
     const startDate = new Date(start, 0, 0, 0, 0, 0, 0);
+    if (start < 100) {
+        startDate.setFullYear(start);
+    }
     const endDate = new Date(end + 1, 0, 0, 0, 0, 0, 0);
+    if (end + 1 < 100) {
+        endDate.setFullYear(end + 1);
+    }
     model.getPortsStatistics(startDate, endDate).then(result => {
         res.send(result);
     }).catch(() => {
