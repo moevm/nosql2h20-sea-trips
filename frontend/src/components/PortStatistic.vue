@@ -71,15 +71,15 @@
         },
         methods: {
             DepartureChartClick: function (event) {
-                let dep = this.statistic.departures[event[0].row + 1][0];
+                let dep = this.statistic.departures[event[0].row + 1][0].replace('&', '%26');
                 this.$emit('click', `http://localhost:3000/sea-journal/trips/departure?dep=${dep}`, 'Port Records')
             },
             DestinationChartClick: function (event) {
-                let dest = this.statistic.destinations[event[0].row + 1][0];
+                let dest = this.statistic.destinations[event[0].row + 1][0].replace('&', '%26');
                 this.$emit('click', `http://localhost:3000/sea-journal/trips/destination?dest=${dest}`, 'Port Records')
             },
             TradeChartClick: function (event) {
-                let route = this.statistic.trades[event[0].row + 1][0];
+                let route = this.statistic.trades[event[0].row + 1][0].replace('&', '%26');
                 let tradePoints = route.split(" -> ");
                 this.$emit('click', `http://localhost:3000/sea-journal/trips/trade?dep=${tradePoints[0]}&dest=${tradePoints[1]}`, 'Port Records')
             }

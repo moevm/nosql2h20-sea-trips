@@ -76,11 +76,11 @@
                 this.$emit('click', `http://localhost:3000/sea-journal/trips/year?year=${year}`, 'Ship Records', false)
             },
             VoyageChartClick: function (event) {
-                let ship = this.statistic.voyages[event[0].row + 1][0];
+                let ship = this.statistic.voyages[event[0].row + 1][0].replace('&', '%26');
                 this.$emit('click', `http://localhost:3000/sea-journal/trips/ship?ship=${ship}`, 'Ship Records')
             },
             MileageChartClick: function (event) {
-                let ship = this.statistic.mileage[event[0].row + 1][0];
+                let ship = this.statistic.mileage[event[0].row + 1][0].replace('&', '%26');
                 this.$emit('click', `http://localhost:3000/sea-journal/trips/ship?ship=${ship}`, 'Ship Records')
             },
         }
