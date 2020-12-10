@@ -9,15 +9,15 @@
                     </div>
                     <div class="w3-cell" style="width: 20%">
                         <div class="w3-cell-row">
-                            <div class="w3-cell">
+                            <div class="w3-cell" style="width: 45%">
                                 <label>
                                     <input type="number" min="0" name="start" v-model="start" class="w3-input w3-border w3-round-large" required>
                                 </label>
                             </div>
-                            <div class="w3-cell w3-center" style="padding: 10px">
+                            <div class="w3-cell w3-center" style="padding: 10px; width: 10%">
                                 <span>&mdash;</span>
                             </div>
-                            <div class="w3-cell">
+                            <div class="w3-cell" style="width: 45%">
                                 <label>
                                     <input type="number" min="0" name="end" v-model="end" class="w3-input w3-border w3-round-large" required>
                                 </label>
